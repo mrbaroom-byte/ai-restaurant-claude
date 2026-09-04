@@ -34,3 +34,11 @@ RESTAURANT-REPORT.pdf
 # Misc
 *.log
 .cache/
+
+# Fonts cached at build time by the prototype generator (Tajawal, SIL OFL).
+# Re-fetched automatically; not vendored to keep licensing and repo size clean.
+business/02-product/prototype/fonts/
+
+# Prototype HTML is a build intermediate (regenerable, and large because it embeds the
+# fonts). The PDFs are the deliverable and are committed.
+business/02-product/prototype/prototype-*.html

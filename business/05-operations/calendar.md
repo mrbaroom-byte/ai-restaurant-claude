@@ -15,6 +15,10 @@ print window if the answer arrives late. Send them now.
 - [ ] **SASO/SABER** — do the bundle's pencils or stickers need conformity certification?
       *(blocks the bundle SKU, which the economics say is the offer that actually works)*
 - [ ] Three printers briefed with `02-product/printer-brief.md`; samples requested
+- [ ] **Illustrator quotes from three candidates** against `02-product/illustrator-brief.md`
+      *(the critical-path gap — nothing else in this plan takes as long to produce)*
+- [ ] Print `prototype-dummy.pdf` on the heaviest uncoated stock to hand — the paper,
+      tear-out and marker tests can start before any art exists
 - [ ] Recruit against `01-validation/01-screener.md` — 12 parents, 15 children
 - [ ] Print three unbranded prototypes for the sessions
 - [ ] Book Riyadh and Jeddah interview slots
@@ -57,7 +61,8 @@ print cost is a placeholder and the model is very sensitive to it.
 
 - Independent cultural and editorial review of all 20 sheets, signed off **by sheet number**
 - Arabic proofread on the **physical** proof — shaping and diacritics break at output, not on screen
-- Illustration fixes from the play-test findings
+- Illustration batches 3-6 delivered and reviewed against the play-test findings
+  (`02-product/illustrator-brief.md` — batches 1 and 2 should already be approved)
 - Printer proof produced; the acceptance test in `02-product/printer-brief.md` run on it
 - Legal deposit / ISBN applied to the cover if required
 - **Production files signed off**
@@ -101,7 +106,7 @@ Controlled online release. No paid spend on day one. Replenish only on evidence.
 
 | Date | Decision | If it slips |
 |------|----------|-------------|
-| **Sept 6** | The three external questions sent | The October print window is at risk before the sprint has even started |
+| **Sept 6** | The three external questions sent, illustrator quotes requested | The October print window is at risk before the sprint has even started |
 | **Sept 30** | Gate review — print or don't | Everything downstream slips with it. Do not soften a gate to protect this date. |
 | **Oct 15** | Production files signed off | The print run cannot start; November is gone |
 | **Nov 10** | Dry run passed | **Delay the launch rather than ship badly.** The first fifty reviews cannot be bought back. |

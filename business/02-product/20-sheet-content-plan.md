@@ -7,6 +7,10 @@
 > produces confident errors. The reviewer's job is to check each one against a primary source and
 > sign the sheet off by number.
 
+> **Machine-readable copy:** `sheets.json` holds this same data and is the single source of
+> truth read by the print prototype and the landing pages, so the site and the product cannot
+> drift apart. Edit `sheets.json`, then re-run both builds. This document holds the rationale.
+
 ---
 
 ## Design system across all 20 sheets
@@ -457,6 +461,28 @@ sheets**, which raises COGS without addressing the actual complaint.
 6. **Line weight consistent within a sheet**, varying only to separate foreground from background.
 7. **Test every sheet at 100% print size in greyscale** before approval. Detail that reads on a
    screen closes up on paper.
+
+## The prototype
+
+`prototype/build_prototype.py` renders this specification as a real A4 pad, two ways:
+
+- **`prototype-template.pdf`** — the production layout. Every sheet's typography, prompts,
+  difficulty icon, numbering and 12 mm safe margin, finalised, with the illustration area empty
+  and its art direction printed inside it. This is what the illustrator draws into and what the
+  printer quotes against.
+- **`prototype-dummy.pdf`** — the same pages with placeholder geometric line art, so a physical
+  pad can be printed for the **paper and format tests**: marker bleed-through, tear-out, crayon
+  behaviour, trim and drop test.
+
+**What the dummy does not test:** subject appeal, the difficulty of the real line art, or
+whether children engage with the actual drawings. The placeholder art is deliberately generic
+geometry — inventing "Arabian-style" motifs would break rule 5 above, and fake Al-Qatt or Sadu
+patterns would break it badly. Real engagement testing needs commissioned illustration; see
+`illustrator-brief.md`, which is the critical-path gap in the whole plan.
+
+```
+python3 business/02-product/prototype/build_prototype.py --mode both
+```
 
 ## Editorial sign-off log
 

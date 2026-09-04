@@ -45,8 +45,12 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
 
 02-product/
   20-sheet-content-plan.md Full editorial spec, all 20 sheets, bilingual
+  sheets.json              The 20 sheets as data — single source of truth
+  illustrator-brief.md     Commissioning pack. THE CRITICAL-PATH GAP.
   printer-brief.md         RFQ for three printers + the acceptance test
   quality-checklist.md     Safety, print quality, the marker test, sign-off
+  prototype/build_prototype.py → prototype-template.pdf  (illustrator + printer layout)
+                              → prototype-dummy.pdf     (paper and format test pad)
 
 03-economics/
   build_model.py           → unit-economics.xlsx  (6 tabs, live formulas)
@@ -71,6 +75,7 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
 python3 business/01-validation/analysis/build_workbook.py   # sprint workbook
 python3 business/03-economics/build_model.py                # economics model
 python3 business/04-launch/landing/build.py                 # three landing cells
+python3 business/02-product/prototype/build_prototype.py --mode both   # the printable pad
 ```
 
 The landing build **fails loudly** if the cells drift apart below the hero — a message test whose
@@ -102,7 +107,22 @@ That is what a validation pilot *is*. SAR 22,000 buys a language bank, a tested 
 cultural review, a working store, real product media, first reviews and an operational dry run.
 Say this out loud before you start, or you will mistake a normal pilot for a failure in December.
 
-### 3 · Roughly half the budget is only committed if the evidence says go
+### 3 · Illustration is the one thing you cannot do yourself in September
+
+Everything else in this pack is executable by one person. Twenty pieces of original black line
+art are not, and nothing in the SAR 22,000 budget covers them — the SAR 3,500 prototype line is
+for print tests, not for finished illustration.
+
+`prototype-template.pdf` closes as much of that gap as is honest: the full A4 layout with every
+sheet's typography, prompts, difficulty icon and safe margin finalised, and the art direction
+printed inside each empty illustration area. An illustrator draws into it; a printer quotes
+against it. `prototype-dummy.pdf` is printable **today** for the paper tests — bleed-through,
+tear-out, trim — but it tests the paper, not the drawings.
+
+Commission in the first week (`02-product/illustrator-brief.md`), style-test three sheets before
+committing to twenty, and price it before the print-run maths is settled.
+
+### 4 · Roughly half the budget is only committed if the evidence says go
 
 About SAR 11,000 buys the evidence (validation, cultural review, prototype, tests). The other
 SAR 11,000 — the print run and the store build — is only spent after the 30 September gate

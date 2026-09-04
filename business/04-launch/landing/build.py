@@ -546,19 +546,14 @@ TEMPLATE = """<!doctype html>
 </html>
 """
 
-# The 20 sheets, matching 02-product/20-sheet-content-plan.md
-SHEETS = [
-    ("المها العربي", "Arabian Oryx", 1), ("النخيل", "Date palms", 1),
-    ("واحة الأحساء", "Al-Ahsa oasis", 2), ("حافة العالم", "Edge of the World", 2),
-    ("الشعاب المرجانية", "Red Sea reef", 3), ("جزر فرسان", "Farasan Islands", 2),
-    ("ورد الطائف", "Taif roses", 2), ("رجال ألمع", "Rijal Almaa", 3),
-    ("رواشين البلد", "Rawasheen of Al-Balad", 3), ("الطريف", "At-Turaif, Diriyah", 2),
-    ("الحِجر", "Hegra, AlUla", 2), ("القط العسيري", "Al-Qatt Al-Asiri", 3),
-    ("السدو", "Sadu weaving", 2), ("الفخار والخوص", "Pottery & palm weaving", 2),
-    ("القهوة العربية", "Arabic coffee", 1), ("يوم في السوق", "A day at the souq", 3),
-    ("الصقارة", "Falconry", 2), ("الرياض اليوم", "Riyadh today", 2),
-    ("نحو الفضاء", "Toward space", 2), ("السعودية بعيوني", "My Saudi Arabia", 0),
-]
+# The 20 sheets come from 02-product/sheets.json — the single source of truth shared with
+# the print prototype, so the site and the product can never drift apart.
+_SHEET_DATA = json.loads(
+    (HERE.parents[1] / "02-product" / "sheets.json").read_text(encoding="utf-8")
+)["sheets"]
+SHEETS = [(s["ar"], s["en"], s["difficulty"]) for s in _SHEET_DATA]
+if len(SHEETS) != 20:
+    raise SystemExit(f"Expected 20 sheets in sheets.json, found {len(SHEETS)}.")
 
 ARABIC_DIGITS = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
 
