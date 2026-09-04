@@ -27,6 +27,25 @@ did not already kill the idea.
 | `04-survey-instrument.md` | Full quant questionnaire with forced trade-offs |
 | `05-decision-gates.md` | The thresholds, and what to do when each one fails |
 | `analysis/build_workbook.py` | Generates `sprint-workbook.xlsx` — tabs for every instrument |
+| `fieldpack/build_fieldpack.py` | Generates `fieldpack.pdf` — **the paper you carry into the sessions** |
+
+## Print this before Monday
+
+`fieldpack/fieldpack.pdf` — 50 pages, single-sided on plain A4:
+
+- **Parental consent, Arabic and English** — signed before any child session. No consent, no session.
+- **Consent to record**, bilingual, for the parent interviews, with a deletion log
+- Screener with the quota tables
+- Facilitator's card — the interview abridged to what you glance at mid-session
+- 12 language-bank capture sheets, one per parent
+- 15 × 2 observation sheets — sheet A during the session, sheet B after
+- Incentive and receipt log
+
+> **The consent forms are drafts and need legal review before use.** They make specific promises
+> — data deleted after the write-up, no marketing list, no child's face or name, deletion on
+> request up to 30 September. Those promises are only worth making if you keep them, which is
+> why sheet B carries a "recording scheduled for deletion" tick and the recording consent
+> carries a deletion log. Saudi personal-data obligations (PDPL) apply to all of it.
 
 ## Sequencing
 

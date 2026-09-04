@@ -20,6 +20,7 @@ production order. Interviews start in three days.
 | 5 minutes | `00-strategy/locked-decisions.md` — what is settled, what is open, what decides the rest |
 | 30 minutes | That, plus `03-economics/README.md` — the finding that shapes the whole plan |
 | This week | `05-operations/calendar.md` — three external questions to send before Sept 6 |
+| Before Monday | Print `01-validation/fieldpack/fieldpack.pdf` and `02-product/prototype/prototype-dummy.pdf` |
 
 ---
 
@@ -42,6 +43,8 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
   04-survey-instrument.md  Forced trade-offs, proposition test, objection sizing
   05-decision-gates.md     Six gates, the thresholds, and the stop rule
   analysis/build_workbook.py → sprint-workbook.xlsx  (7 tabs, live gate arithmetic)
+  fieldpack/build_fieldpack.py → fieldpack.pdf  (50 pages: consent forms, screener,
+                              facilitator card, 12 capture sheets, 15x2 observation sheets)
 
 02-product/
   20-sheet-content-plan.md Full editorial spec, all 20 sheets, bilingual
@@ -76,6 +79,7 @@ python3 business/01-validation/analysis/build_workbook.py   # sprint workbook
 python3 business/03-economics/build_model.py                # economics model
 python3 business/04-launch/landing/build.py                 # three landing cells
 python3 business/02-product/prototype/build_prototype.py --mode both   # the printable pad
+python3 business/01-validation/fieldpack/build_fieldpack.py            # the field pack
 ```
 
 The landing build **fails loudly** if the cells drift apart below the hero — a message test whose

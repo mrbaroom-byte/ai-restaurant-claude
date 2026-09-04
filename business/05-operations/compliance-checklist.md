@@ -128,8 +128,12 @@ reputationally worse than the legal exposure alone.
 - [ ] Confirm current PDPL obligations for your business — including any registration,
       data-transfer and breach-notification requirements
 
-> The consent language in `01-validation/01-screener.md` makes promises. Keeping them is both
-> the obligation and the reason those parents will trust the brand later.
+> The consent forms in `01-validation/fieldpack/fieldpack.pdf` make specific promises: data
+> deleted after the write-up, never added to a marketing list, no child's face or name, deletion
+> on request up to 30 September. **Have them reviewed by a legal advisor before the first
+> session**, and adjust them to what you actually intend to do. Keeping those promises is both
+> the obligation and the reason those parents will trust the brand later — which is why the
+> recording consent carries a deletion log and each observation sheet carries a deletion tick.
 
 ---
 
