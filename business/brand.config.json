@@ -1,0 +1,55 @@
+{
+  "_status": "WORKING PLACEHOLDER — NOT LOCKED. The decision brief instructs: do not lock the final masterbrand name, logo, palette or font system before parent language testing (Sept 7-18). Every asset in this repo reads from this file so the name can be changed in one place after the sprint. Run ./business/rename-brand.sh to apply.",
+  "masterbrand": {
+    "latin": "Marsam",
+    "arabic": "مرسم",
+    "meaning": "an atelier / a place where drawing happens",
+    "confidence": "working placeholder only — see 00-strategy/brand-identity-options.md for the five alternates and their trade-offs",
+    "trademark_status": "NOT CLEARED. Descriptive Arabic dictionary word; likely weak on distinctiveness and probably already in use by art-supply and studio businesses. Search SAIP before any spend on identity."
+  },
+  "descriptor": {
+    "en": "Creative play inspired by Saudi Arabia",
+    "ar": "لعب إبداعي مستوحى من السعودية"
+  },
+  "promise": {
+    "en": "Color. Discover. Create.",
+    "ar": "لوّن. اكتشف. أبدع."
+  },
+  "series": {
+    "en": "Creative Journeys",
+    "ar": "رحلات إبداعية"
+  },
+  "flagship": {
+    "en": "Colors of Saudi Arabia",
+    "ar": "ألوان السعودية",
+    "format": "20 single-sided A4 tear-out sheets, 140-160 gsm uncoated",
+    "age": "5-8 primary"
+  },
+  "pricing_test": {
+    "currency": "SAR",
+    "vat_rate": 0.15,
+    "note": "All consumer-facing prices in Saudi Arabia must be displayed VAT-inclusive.",
+    "founder_preorder": 39,
+    "core_cell_low": 39,
+    "core_cell_high": 49,
+    "bundle_cell_low": 79,
+    "bundle_cell_high": 89
+  },
+  "launch": {
+    "public_launch_date": "2026-11-15",
+    "pilot_budget_sar": 22000,
+    "pilot_ceiling_sar": 25000
+  },
+  "locked_decisions": [
+    "Buyer: parents purchasing online for children aged roughly 5-8",
+    "Emotional promise: confident choice, easy screen-light relief, warm cultural connection",
+    "Product: 20 premium tear-out sheets with light bilingual discovery and creative prompts",
+    "Position: creative-learning masterbrand rooted in Saudi Arabia, not souvenir publishing",
+    "Price: test SAR 39 vs SAR 49"
+  ],
+  "not_locked": [
+    "Final masterbrand name, logo, exact palette, font system",
+    "Print run size",
+    "Whether 'Saudi pride' can be the hero promise (must beat creative-learning in paid intent first)"
+  ]
+}
