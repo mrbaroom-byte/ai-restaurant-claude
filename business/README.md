@@ -71,6 +71,16 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
   emails/build_emails.py   → 7 transactional emails, bilingual, HTML + plain text
                              (preorder, shipping, delivered, review, correction, delay)
 
+00-strategy/identity/
+  tokens.json              Palette, type, logo rules — one source for the design system
+  mark.svg                 The proposed mark, hand-drawn on an 8-unit grid
+  build_guidelines.py      → brand-guidelines.html / .pdf (contrast COMPUTED, not typed)
+  mark-explorations/       Six generated marks, kept with the reasoning
+
+06-roadmap/
+  product-range.md         Every product after the flagship, with the gates between them
+  build_range_model.py     → range-model.xlsx (SKUs, attach, cohort, repeat sensitivity)
+
 05-operations/
   compliance-checklist.md  SBC, MoC, ZATCA, KFNL, SASO/SABER, PDPL, SAIP
   launch-runbook.md        Store build, the 20-order dry run, when things go wrong
@@ -86,6 +96,8 @@ python3 business/04-launch/landing/build.py                 # three landing cell
 python3 business/02-product/prototype/build_prototype.py --mode all    # the printable pad
 python3 business/01-validation/fieldpack/build_fieldpack.py            # the field pack
 python3 business/04-launch/emails/build_emails.py                     # transactional emails
+python3 business/00-strategy/identity/build_guidelines.py             # brand guidelines
+python3 business/06-roadmap/build_range_model.py                      # range economics
 ```
 
 The landing build **fails loudly** if the cells drift apart below the hero — a message test whose
@@ -138,7 +150,22 @@ tear-out, trim — but it tests the paper, not the drawings.
 Commission in the first week (`02-product/illustrator-brief.md`), style-test three sheets before
 committing to twenty, and price it before the print-run maths is settled.
 
-### 4 · Roughly half the budget is only committed if the evidence says go
+### 4 · The range is the answer to the acquisition problem — but only partly
+
+`06-roadmap/range-model.xlsx` puts numbers on it. A cohort of 100 with a 30% sticker attach:
+CAC headroom goes from **SAR 12.46** at zero repeat to **SAR 19.44** at 40% repeat. That is a
+60% improvement and it is not a solution on its own — even SAR 19.44 against a SAR 1.60 click
+still needs ~8% landing conversion.
+
+What the range actually buys: warm and retargeted traffic becomes viable, and the **activity
+kit** at SAR 59.76 contribution becomes the one SKU that can carry cold paid traffic. Everything
+else is sequenced to reuse artwork already paid for, so that a second purchase costs almost
+nothing to offer.
+
+**Instrument repeat rate from the first order.** It is the number the whole roadmap turns on,
+and it cannot be reconstructed later.
+
+### 5 · Roughly half the budget is only committed if the evidence says go
 
 About SAR 11,000 buys the evidence (validation, cultural review, prototype, tests). The other
 SAR 11,000 — the print run and the store build — is only spent after the 30 September gate

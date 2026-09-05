@@ -284,11 +284,11 @@ body {
 }
 /* ---------- guides, only on the template build ---------- */
 .sheet.art .art svg { width: 100%; height: 100%; }
-.sheet.template .safe { outline: .3mm dashed #dfa06a; outline-offset: 0; }
+.sheet.template .safe { outline: .3mm dashed #b96a33; outline-offset: 0; }
 .sheet.template .safe::after {
   content: "12 mm safe margin - nothing colourable outside this line";
   position: absolute; bottom: -8mm; left: 0; direction: ltr;
-  font-size: 2.3mm; color: #dfa06a; letter-spacing: .04em;
+  font-size: 2.3mm; color: #b96a33; letter-spacing: .04em;
 }
 
 /* ---------- sheet ---------- */
@@ -298,9 +298,9 @@ body {
   font-size: 4.4mm; color: #c8763c; }
 .diff .open { color: #b9c2bd; }
 .pillar { grid-column: 2; direction: rtl; text-align: left; font-size: 3.1mm;
-  font-weight: 700; color: #6d7a73; overflow: hidden; }
+  font-weight: 700; color: #5f6b64; overflow: hidden; }
 .pillar span { display: block; direction: ltr; text-align: left; font-size: 2.4mm;
-  font-weight: 400; color: #9aa5a0; letter-spacing: .04em; text-transform: uppercase;
+  font-weight: 400; color: #667269; letter-spacing: .04em; text-transform: uppercase;
   white-space: nowrap; }
 
 .art { flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch;
@@ -309,7 +309,7 @@ body {
 .artbrief {
   width: 100%; border: .4mm dashed #c3cdc7; border-radius: 2mm;
   display: flex; flex-direction: column; justify-content: flex-start; gap: 2.5mm;
-  padding: 8mm; direction: ltr; text-align: left; color: #6d7a73;
+  padding: 8mm; direction: ltr; text-align: left; color: #5f6b64;
 }
 .artbrief b { color: #1f3a2e; font-size: 4mm; }
 .artbrief p { margin: 0; font-size: 3.2mm; line-height: 1.55; max-width: 105mm; }
@@ -317,55 +317,55 @@ body {
 
 .make { flex: 0 0 auto; text-align: center; padding: 1mm 0 3mm; }
 .make .mar { display: block; font-size: 5mm; font-weight: 700; color: #1f6b4a; }
-.make .men { display: block; direction: ltr; font-size: 3.1mm; color: #939d98; margin-top: .8mm; }
+.make .men { display: block; direction: ltr; font-size: 3.1mm; color: #667269; margin-top: .8mm; }
 
 .sfoot { flex: 0 0 auto; border-top: .35mm solid #dfe5e1; padding-top: 3.5mm; display: flex;
   align-items: flex-end; gap: 5mm; }
 .fact { flex: 1 1 auto; min-width: 0; }
 .far { margin: 0; font-size: 4mm; font-weight: 500; line-height: 1.5; }
-.fen { margin: 1mm 0 0; direction: ltr; text-align: left; font-size: 2.9mm; color: #8b958f; line-height: 1.4; }
+.fen { margin: 1mm 0 0; direction: ltr; text-align: left; font-size: 2.9mm; color: #667269; line-height: 1.4; }
 .talk { flex: 0 0 48mm; border-inline-start: .35mm solid #e6d9c8; padding-inline-start: 4mm; }
 .talk .ticon { color: #c8763c; font-size: 2.6mm; }
 .talk .tar { display: block; font-size: 3.2mm; font-weight: 700; color: #6b4a2c; }
-.talk .ten { display: block; direction: ltr; text-align: left; font-size: 2.5mm; color: #a99a88; }
+.talk .ten { display: block; direction: ltr; text-align: left; font-size: 2.5mm; color: #7a6a56; }
 .num { flex: 0 0 14mm; text-align: center; }
 .num b { display: block; font-size: 6mm; color: #1f3a2e; line-height: 1; }
-.num span { display: block; direction: ltr; font-size: 2.4mm; color: #aab3ae; }
+.num span { display: block; direction: ltr; font-size: 2.4mm; color: #667269; }
 
 /* ---------- cover ---------- */
 .cover .safe { justify-content: space-between; text-align: center; }
 .cbrand { font-size: 7mm; font-weight: 700; color: #1f3a2e; }
 .cbrand span { display: block; direction: ltr; font-size: 2.8mm; font-weight: 400;
-  letter-spacing: .22em; text-transform: uppercase; color: #9aa5a0; margin-top: 1mm; }
+  letter-spacing: .22em; text-transform: uppercase; color: #667269; margin-top: 1mm; }
 .ctitle h1 { font-size: 18mm; margin: 0; color: #1f6b4a; line-height: 1.1; }
-.ctitle h2 { font-size: 6mm; margin: 3mm 0 0; direction: ltr; font-weight: 400; color: #6d7a73; }
+.ctitle h2 { font-size: 6mm; margin: 3mm 0 0; direction: ltr; font-weight: 400; color: #5f6b64; }
 .cpromise { margin: 8mm 0 0; font-size: 5mm; font-weight: 700; color: #c8763c; }
-.cpromise span { display: block; direction: ltr; font-size: 3mm; font-weight: 400; color: #b0a08e; margin-top: 1mm; }
+.cpromise span { display: block; direction: ltr; font-size: 3mm; font-weight: 400; color: #7a6a56; margin-top: 1mm; }
 .cspecs { display: flex; justify-content: center; gap: 14mm; }
 .cspecs div { text-align: center; }
 .cspecs b { display: block; font-size: 9mm; color: #1f3a2e; line-height: 1; }
-.cspecs span { display: block; font-size: 2.8mm; color: #8b958f; margin-top: 1.5mm; line-height: 1.4; }
-.cfoot { font-size: 3mm; color: #9aa5a0; margin: 0; }
-.cfoot span { display: block; direction: ltr; font-size: 2.5mm; color: #b6bfba; margin-top: 1mm; }
+.cspecs span { display: block; font-size: 2.8mm; color: #667269; margin-top: 1.5mm; line-height: 1.4; }
+.cfoot { font-size: 3mm; color: #667269; margin: 0; }
+.cfoot span { display: block; direction: ltr; font-size: 2.5mm; color: #667269; margin-top: 1mm; }
 
 /* ---------- certificate ---------- */
 .cert .safe { align-items: center; justify-content: center; }
 .cert-frame { border: .8mm solid #c8763c; border-radius: 3mm; padding: 18mm 14mm;
   width: 100%; text-align: center; }
 .ceyebrow { font-size: 8mm; font-weight: 700; color: #1f6b4a; margin: 0 0 8mm; }
-.ceyebrow span { display: block; direction: ltr; font-size: 3.2mm; font-weight: 400; color: #9aa5a0; }
+.ceyebrow span { display: block; direction: ltr; font-size: 3.2mm; font-weight: 400; color: #667269; }
 .cline { font-size: 4.2mm; color: #4a5a52; margin: 0; }
-.cline span { display: block; direction: ltr; font-size: 2.9mm; color: #a3ada8; margin-top: 1mm; }
+.cline span { display: block; direction: ltr; font-size: 2.9mm; color: #667269; margin-top: 1mm; }
 .cfield { border-bottom: .4mm solid #cfd8d3; height: 12mm; margin: 4mm 0 6mm; }
 .cfield.sm { height: 8mm; margin: 2mm 0 1.5mm; }
 .csign { display: flex; gap: 10mm; margin-top: 12mm; }
 .csign div { flex: 1; }
-.csign span { font-size: 2.7mm; color: #a3ada8; }
+.csign span { font-size: 2.7mm; color: #667269; }
 
 /* ---------- guide ---------- */
 .guide .safe { direction: ltr; text-align: left; }
 .guide h1 { font-size: 7mm; color: #1f3a2e; margin: 0 0 1mm; }
-.guide h1 span { display: block; font-size: 3.2mm; font-weight: 400; color: #8b958f; }
+.guide h1 span { display: block; font-size: 3.2mm; font-weight: 400; color: #667269; }
 .warn { font-size: 3mm; line-height: 1.5; background: #fdf3e9; border-inline-start: 1mm solid #c8763c;
   padding: 3mm 4mm; margin: 3mm 0; color: #6b4a2c; }
 .guide table { width: 100%; border-collapse: collapse; margin-top: 3mm; font-size: 2.9mm; }

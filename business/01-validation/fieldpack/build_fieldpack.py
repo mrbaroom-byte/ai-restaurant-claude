@@ -539,28 +539,28 @@ body { font-family: 'Tajawal', sans-serif; color: #1a2420; background: #8a8f8b; 
 @media print { .page { margin: 0; box-shadow: none; } }
 .safe { position: absolute; inset: 13mm 14mm 11mm; display: flex; flex-direction: column; }
 .pfoot { margin-top: auto; padding-top: 3mm; border-top: .25mm solid #e6ebe8;
-  font-size: 2.4mm; color: #a3ada8; direction: ltr; text-align: left; }
+  font-size: 2.4mm; color: #667269; direction: ltr; text-align: left; }
 
 h1.ftitle { font-size: 6.2mm; color: #1f3a2e; margin: 0 0 4mm; line-height: 1.2; }
 h1.ftitle .side { float: right; font-size: 3mm; font-weight: 700; color: #fff;
   background: #c8763c; padding: 1mm 3mm; border-radius: 1mm; letter-spacing: .04em; }
-h1.ftitle .sub { display: block; clear: both; font-size: 3mm; font-weight: 400; color: #7d8a84; margin-top: 1mm; }
+h1.ftitle .sub { display: block; clear: both; font-size: 3mm; font-weight: 400; color: #5f6b64; margin-top: 1mm; }
 h2 { font-size: 3.5mm; color: #1f6b4a; margin: 4mm 0 2mm; text-transform: uppercase;
   letter-spacing: .06em; border-bottom: .25mm solid #e6ebe8; padding-bottom: 1mm; }
 h2.stage { text-transform: none; letter-spacing: 0; font-size: 4mm; color: #1f3a2e; }
-h2.stage i { font-weight: 400; color: #9aa5a0; font-size: 2.9mm; }
+h2.stage i { font-weight: 400; color: #667269; font-size: 2.9mm; }
 h2.stage.big { font-size: 5mm; }
 p { margin: 0 0 2mm; line-height: 1.5; }
 .lead { font-size: 3.2mm; color: #4a5a52; }
-.hint { font-size: 2.7mm; color: #7d8a84; line-height: 1.45; margin: 2mm 0; }
+.hint { font-size: 2.7mm; color: #5f6b64; line-height: 1.45; margin: 2mm 0; }
 .big-q { font-size: 4mm; font-weight: 700; color: #1f3a2e; }
-.big-q i { display: block; font-weight: 400; font-size: 3.2mm; color: #7d8a84; }
+.big-q i { display: block; font-weight: 400; font-size: 3.2mm; color: #5f6b64; }
 
 ul.plain { margin: 0 0 2mm; padding-inline-start: 5mm; }
 ul.plain li { font-size: 3mm; line-height: 1.55; margin-bottom: 1mm; }
 ol.qs { margin: 0 0 2mm; padding-inline-start: 6mm; }
 ol.qs li { font-size: 3.1mm; line-height: 1.5; margin-bottom: 2mm; }
-ol.qs i, ul.plain i { display: block; direction: rtl; text-align: right; color: #7d8a84;
+ol.qs i, ul.plain i { display: block; direction: rtl; text-align: right; color: #5f6b64;
   font-style: normal; font-size: 3mm; margin-top: .5mm; }
 
 .rtl { direction: rtl; text-align: right; }
@@ -572,12 +572,12 @@ ol.qs i, ul.plain i { display: block; direction: rtl; text-align: right; color: 
 .frow { display: flex; gap: 3mm; margin-bottom: 2mm; }
 .f { margin-bottom: 2mm; }
 .fbox { border: .3mm solid #cfd8d3; border-radius: 1mm; background: #fdfdfb; }
-.flab { display: block; font-size: 2.5mm; color: #7d8a84; margin-top: .8mm; }
-.flab i { font-style: normal; color: #aab3ae; }
+.flab { display: block; font-size: 2.5mm; color: #5f6b64; margin-top: .8mm; }
+.flab i { font-style: normal; color: #667269; }
 .flab i::before { content: " · "; color: #cfd8d3; }
 .tick { display: flex; gap: 2.5mm; align-items: flex-start; margin-bottom: 2mm; font-size: 3mm; line-height: 1.45; }
-.tick .box { flex: 0 0 3.8mm; height: 3.8mm; border: .35mm solid #7d8a84; border-radius: .8mm; margin-top: .4mm; }
-.tick i { display: block; font-style: normal; font-size: 2.7mm; color: #8b958f; }
+.tick .box { flex: 0 0 3.8mm; height: 3.8mm; border: .35mm solid #5f6b64; border-radius: .8mm; margin-top: .4mm; }
+.tick i { display: block; font-style: normal; font-size: 2.7mm; color: #667269; }
 
 /* boxes */
 .cbox { border: .3mm solid #dfe5e1; border-radius: 2mm; padding: 4mm 5mm; margin-bottom: 3mm; background: #fbfcfb; }
@@ -596,17 +596,17 @@ table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
 .q .qn { width: 8mm; color: #1f6b4a; font-weight: 700; }
 .q .yn { width: 16mm; text-align: center; font-weight: 700; color: #4a5a52; }
 .q .term { width: 18mm; font-size: 2.5mm; color: #9b5a2c; }
-.q i { display: block; direction: rtl; text-align: right; font-style: normal; color: #7d8a84; font-size: 2.9mm; margin-top: .6mm; }
+.q i { display: block; direction: rtl; text-align: right; font-style: normal; color: #5f6b64; font-size: 2.9mm; margin-top: .6mm; }
 
 /* cover */
 .cover .safe { justify-content: flex-start; }
 .chead { text-align: center; margin-bottom: 6mm; }
 .ceyebrow { font-size: 4mm; font-weight: 700; color: #c8763c; margin: 0; }
 .ceyebrow span { display: block; direction: ltr; font-size: 2.6mm; font-weight: 400;
-  letter-spacing: .2em; text-transform: uppercase; color: #b0a08e; margin-top: 1mm; }
+  letter-spacing: .2em; text-transform: uppercase; color: #7a6a56; margin-top: 1mm; }
 .chead h1 { font-size: 13mm; color: #1f3a2e; margin: 4mm 0 0; line-height: 1.05; }
-.chead h1 span { display: block; direction: ltr; font-size: 4.5mm; font-weight: 400; color: #7d8a84; margin-top: 2mm; }
-.cdates { font-size: 3.2mm; color: #9aa5a0; margin-top: 3mm; }
+.chead h1 span { display: block; direction: ltr; font-size: 4.5mm; font-weight: 400; color: #5f6b64; margin-top: 2mm; }
+.cdates { font-size: 3.2mm; color: #667269; margin-top: 3mm; }
 .cnote { font-size: 2.9mm; color: #4a5a52; background: #f2f6f4; border-inline-start: 1mm solid #1f6b4a;
   padding: 3mm 4mm; border-radius: 0 1.5mm 1.5mm 0; }
 """

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Mark">
+  <!-- The tear-out page: a sheet whose top corner has come away, enclosing the space a
+       child fills. Drawn on an 8-unit grid, stroke 7 (11% of the mark) so it holds at 16px. -->
+  <g stroke="#1F6B4A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 14a6 6 0 0 1 6-6h24l18 18v24a6 6 0 0 1-6 6H14a6 6 0 0 1-6-6z"/>
+    <path d="M23 42l8-9 5 5 6-8" stroke-width="6"/>
+  </g>
+</svg>

@@ -70,7 +70,7 @@ TEMPLATE = """<!doctype html>
   :root {{
     --ink:      #1f2d27;
     --ink-soft: #4a5a52;
-    --muted:    #7c8a83;
+    --muted:    #5f6b64;
     --paper:    #faf7f1;
     --card:     #ffffff;
     --line:     #e5ded1;
