@@ -1,0 +1,44 @@
+تم حجز نسختك 🎉
+Your copy is reserved
+========================================
+
+مرسم
+
+Marsam
+
+تم حجز نسختك
+Your copy is reserved
+شكرًا لك {{first_name}}. حجزنا لك نسخة من «ألوان السعودية» بالسعر التأسيسي.
+Thank you {{first_name}}. We've reserved you a copy of Colors of Saudi Arabia at the founder price.
+لم يُخصم أي مبلغ الآن. سنراسلك حين تصبح النسخ جاهزة للشحن، ويمكنك التراجع في أي وقت قبل الدفع.
+Nothing has been charged. We'll email you when copies are ready to ship, and you can change your mind at any point before payment.
+
+رقم الحجز
+{{order_number}}
+
+المنتج
+{{product_name}}
+
+السعر التأسيسي
+{{price}} ريال شامل الضريبة
+
+التسليم المتوقع
+نوفمبر ٢٠٢٦
+
+المدينة
+{{city}}
+
+سنراسلك مرة واحدة عند الشحن، ومرة عند الوصول. لا رسائل غير ذلك.
+We'll email you once when it ships and once when it arrives. Nothing else.
+
+تصلك هذه الرسالة لأنك طلبت من متجرنا.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

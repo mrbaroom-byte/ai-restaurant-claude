@@ -1,0 +1,42 @@
+طلبك في الطريق إليك
+Your order is on its way
+========================================
+
+مرسم
+
+Marsam
+
+طلبك في الطريق
+Your order is on its way
+خرج طلبك من عندنا اليوم يا {{first_name}}.
+Your order left us today, {{first_name}}.
+رقم الطلب
+{{order_number}}
+
+شركة الشحن
+{{carrier}}
+
+رقم التتبع
+{{tracking_number}}
+
+الوصول المتوقع
+{{delivery_window}}
+
+تتبّع الشحنة
+
+Track ({{tracking_url}})
+
+إذا تأخر الطلب عن الموعد المتوقع، راسلنا وسنتابعه بأنفسنا. لا نطلب منك أن تتابع شركة الشحن.
+If it runs late, write to us and we'll chase it ourselves. We won't ask you to chase the courier.
+
+تصلك هذه الرسالة لأنك طلبت من متجرنا.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

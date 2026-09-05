@@ -9,6 +9,7 @@
 | `product-page-copy.md` | Full PDP copy deck, bilingual, with the trust blocks |
 | `ad-creative-briefs.md` | Video scripts and carousel briefs for each acquisition stage |
 | `creator-seeding-kit.md` | The creator brief, disclosure rules, and what to send |
+| `emails/build_emails.py` | Generates the 7 transactional emails — HTML, plain text, preview gallery |
 
 Build: `python3 business/04-launch/landing/build.py`
 

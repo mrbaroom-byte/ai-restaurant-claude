@@ -1,0 +1,38 @@
+تأخير في طلبك — وما سنفعله
+Your order is delayed — and what we're doing
+========================================
+
+مرسم
+
+Marsam
+
+طلبك تأخر
+Your order is delayed
+نكتب إليك بمجرد أن عرفنا، لا بعد أن نجد حلًا.
+We're writing as soon as we knew, not after we'd found a solution.
+رقم الطلب
+{{order_number}}
+
+السبب
+{{delay_reason}}
+
+الموعد الجديد
+{{new_delivery_window}}
+
+إذا كان هذا لا يناسبك، ردّ على هذه الرسالة وسنعيد لك المبلغ كاملًا فورًا، بدون أي أسئلة. وإذا اخترت الانتظار، سنتحمل نحن أي فرق في تكلفة الشحن السريع.
+If that doesn't work for you, reply to this email and we'll refund you in full immediately, no questions. If you'd rather wait, any expedited shipping cost is on us.
+
+نعتذر عن ذلك.
+We're sorry.
+
+تصلك هذه الرسالة لأن لديك طلبًا معنا.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

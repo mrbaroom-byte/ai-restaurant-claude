@@ -1,0 +1,33 @@
+كيف كانت التجربة مع طفلك؟
+How did it go?
+========================================
+
+مرسم
+
+Marsam
+
+كيف كانت التجربة؟
+How did it go?
+مضى أسبوع تقريبًا يا {{first_name}}. نحن علامة جديدة، وأول التقييمات هي كل ما لدينا.
+It's been about a week, {{first_name}}. We're a new brand, and the first reviews are all we have.
+إن كان لديك دقيقتان، اكتب رأيك — وإن أمكن أرفق صورة لما أنجزه طفلك. الصور من عملية شراء حقيقية هي ما يساعد الأهالي الآخرين على القرار.
+If you have two minutes, write what you thought — and if you can, add a photo of what your child made. Photos from a real purchase are what help other parents decide.
+
+اكتب رأيك
+
+Leave a review ({{review_url}})
+
+إذا لم يعجبك، اكتب ذلك. ننشر كل تقييم كما هو، ولا نطلب تعديله أو حذفه، ولا نقدّم شيئًا مقابل تغييره. وإذا كانت هناك مشكلة نستطيع حلها، راسلنا أولًا وسنحلها.
+If you didn't like it, say so. We publish every review as written, never ask for one to be changed or removed, and never offer anything in exchange. If there's a problem we can fix, write to us first and we will.
+
+تصلك هذه الرسالة لأنك طلبت من متجرنا.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

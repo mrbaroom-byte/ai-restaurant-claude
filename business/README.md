@@ -65,6 +65,8 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
   product-page-copy.md     Full PDP deck, bilingual, six trust blocks
   ad-creative-briefs.md    Discover → Consider → Trust → Share
   creator-seeding-kit.md   Nov 1-10, and the disclosure rules
+  emails/build_emails.py   → 7 transactional emails, bilingual, HTML + plain text
+                             (preorder, shipping, delivered, review, correction, delay)
 
 05-operations/
   compliance-checklist.md  SBC, MoC, ZATCA, KFNL, SASO/SABER, PDPL, SAIP
@@ -80,6 +82,7 @@ python3 business/03-economics/build_model.py                # economics model
 python3 business/04-launch/landing/build.py                 # three landing cells
 python3 business/02-product/prototype/build_prototype.py --mode both   # the printable pad
 python3 business/01-validation/fieldpack/build_fieldpack.py            # the field pack
+python3 business/04-launch/emails/build_emails.py                     # transactional emails
 ```
 
 The landing build **fails loudly** if the cells drift apart below the hero — a message test whose

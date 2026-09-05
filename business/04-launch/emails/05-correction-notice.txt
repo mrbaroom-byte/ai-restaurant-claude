@@ -1,0 +1,40 @@
+تصحيح في إحدى الأوراق — ونرسل لك بديلًا
+A correction, and a replacement sheet
+========================================
+
+مرسم
+
+Marsam
+
+تصحيح، ونسخة بديلة في الطريق
+A correction, and a replacement on its way
+نكتب إليك لأننا وجدنا خطأ في الورقة رقم {{sheet_number}} — {{sheet_title}}.
+We're writing because we found an error on sheet {{sheet_number}} — {{sheet_title}}.
+ما كان مكتوبًا
+{{incorrect_text}}
+
+الصحيح
+{{correct_text}}
+
+كيف عرفنا
+{{how_found}}
+
+أوقفنا بيع الكمية المتأثرة، وأعدنا طباعة الورقة. سنرسل لك نسخة مصححة مجانًا، بدون أن تطلبها ودون أي رسوم شحن.
+We've stopped selling the affected stock and reprinted the sheet. A corrected copy is on its way to you free, without you having to ask and with no shipping charge.
+
+نعتذر عن الخطأ. المنتج يقدّم نفسه كمصدر دقيق عن السعودية للأطفال، وهذا يعني أن الدقة مسؤوليتنا وليست تفصيلًا.
+We're sorry. This product presents itself as an accurate source about Saudi Arabia for children, which makes accuracy our responsibility rather than a detail.
+راجع المحتوى: {{reviewer_name}}.
+Content reviewed by: {{reviewer_name}}.
+
+تصلك هذه الرسالة لأنك اشتريت من الكمية المتأثرة. هذه رسالة تصحيح وليست رسالة تسويقية.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

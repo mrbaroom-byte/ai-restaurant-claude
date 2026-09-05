@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email set — preview</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin:0; padding:32px 20px; background:#f4f2ee; color:#1f2d27;
+    font:15px/1.6 'Segoe UI', system-ui, sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  .lede { color:#6b7770; max-width:70ch; margin:0 0 8px; }
+  .note { background:#fdf3e9; border-left:3px solid #c8763c; padding:12px 16px;
+    border-radius:0 6px 6px 0; font-size:13.5px; max-width:80ch; margin:16px 0 32px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:22px; }
+  article { background:#fff; border:1px solid #e5ded1; border-radius:12px; overflow:hidden;
+    display:flex; flex-direction:column; }
+  header { padding:16px 18px 10px; }
+  h2 { font-size:16px; margin:0; }
+  .slug { margin:2px 0 0; font-size:11px; color:#9aa5a0; font-family:ui-monospace,monospace; }
+  dl { margin:0; padding:0 18px 12px; font-size:12.5px; }
+  dt { color:#9aa5a0; font-size:10px; text-transform:uppercase; letter-spacing:.08em; margin-top:9px; }
+  dd { margin:2px 0 0; color:#4a5a52; }
+  dd.ar { direction:rtl; text-align:right; font-size:14px; color:#1f2d27; }
+  dd.ar span { display:block; direction:ltr; text-align:left; font-size:11.5px; color:#9aa5a0; }
+  iframe { width:100%; height:520px; border:0; border-top:1px solid #e5ded1; background:#faf7f1; }
+  .links { margin:0; padding:10px 18px; font-size:12px; border-top:1px solid #e5ded1; }
+  a { color:#1f6b4a; }
+</style></head>
+<body><div class="wrap">
+  <h1>Transactional email set</h1>
+  <p class="lede">7 emails covering the founder preorder through the first review
+  request. Arabic-first, table layout, inline styles, no webfonts — built for email clients
+  rather than browsers.</p>
+  <p class="note"><b>Not ready to send.</b> Merge tags are <code>{{double_brace}}</code> and
+  must be mapped to your platform's syntax, and the CR number, contact and policy URLs are still
+  placeholders. See <code>README.md</code> for the mapping table and the send rules.</p>
+  <div class="grid">
+    <article>
+      <header>
+        <h2>Preorder confirmation</h2>
+        <p class="slug">01-preorder-confirmation</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">تم حجز نسختك 🎉<span>Your copy is reserved</span></dd>
+        <dt>Preheader</dt><dd class="ar">لم يُخصم أي مبلغ الآن. سنراسلك حين تصبح النسخ جاهزة.</dd>
+        <dt>When</dt><dd>Immediately on preorder. Must fire within one minute — a parent messaging to ask whether the order went through is the Gate 6 failure signal.</dd>
+      </dl>
+      <iframe src="01-preorder-confirmation.html" title="Preorder confirmation" loading="lazy"></iframe>
+      <p class="links"><a href="01-preorder-confirmation.html">open HTML</a> · <a href="01-preorder-confirmation.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Shipping confirmation</h2>
+        <p class="slug">02-shipping-confirmation</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">طلبك في الطريق إليك<span>Your order is on its way</span></dd>
+        <dt>Preheader</dt><dd class="ar">رقم التتبع بالداخل، ومدة التوصيل المتوقعة.</dd>
+        <dt>When</dt><dd>When the courier collects and tracking is live. Never before — a tracking number that does not update yet is worse than no email.</dd>
+      </dl>
+      <iframe src="02-shipping-confirmation.html" title="Shipping confirmation" loading="lazy"></iframe>
+      <p class="links"><a href="02-shipping-confirmation.html">open HTML</a> · <a href="02-shipping-confirmation.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Delivered — how to start</h2>
+        <p class="slug">03-delivered</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">وصلك الطلب — إليك كيف تبدأون<span>It's arrived — here's how to start</span></dd>
+        <dt>Preheader</dt><dd class="ar">ثلاث دقائق، وورقة واحدة. لا يحتاج تحضيرًا.</dd>
+        <dt>When</dt><dd>On delivery confirmation, or 24h after the expected date if no confirmation arrives. This is the email that decides whether the pad gets opened this week or next month.</dd>
+      </dl>
+      <iframe src="03-delivered.html" title="Delivered — how to start" loading="lazy"></iframe>
+      <p class="links"><a href="03-delivered.html">open HTML</a> · <a href="03-delivered.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Review request</h2>
+        <p class="slug">04-review-request</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">كيف كانت التجربة مع طفلك؟<span>How did it go?</span></dd>
+        <dt>Preheader</dt><dd class="ar">رأيك الصادق — حتى لو لم يعجبك.</dd>
+        <dt>When</dt><dd>7–10 days after delivery. Once. Never twice.</dd>
+      </dl>
+      <iframe src="04-review-request.html" title="Review request" loading="lazy"></iframe>
+      <p class="links"><a href="04-review-request.html">open HTML</a> · <a href="04-review-request.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Content correction notice</h2>
+        <p class="slug">05-correction-notice</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">تصحيح في إحدى الأوراق — ونرسل لك بديلًا<span>A correction, and a replacement sheet</span></dd>
+        <dt>Preheader</dt><dd class="ar">وجدنا خطأ في ورقة {{sheet_number}}. نرسل لك نسخة مصححة مجانًا.</dd>
+        <dt>When</dt><dd>When the cultural or editorial review confirms an error in a printed sheet. Sent to everyone who bought the affected run, not only to whoever reported it.</dd>
+      </dl>
+      <iframe src="05-correction-notice.html" title="Content correction notice" loading="lazy"></iframe>
+      <p class="links"><a href="05-correction-notice.html">open HTML</a> · <a href="05-correction-notice.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Founder window closing</h2>
+        <p class="slug">06-founder-window-closing</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">ينتهي السعر التأسيسي بعد يومين<span>The founder price ends in two days</span></dd>
+        <dt>Preheader</dt><dd class="ar">ينتهي {{window_end_date}}. بعدها يرجع السعر إلى {{regular_price}} ريال.</dd>
+        <dt>When</dt><dd>48 hours before the founder price ends. Once. The end date must already have been published on the page when the window opened.</dd>
+      </dl>
+      <iframe src="06-founder-window-closing.html" title="Founder window closing" loading="lazy"></iframe>
+      <p class="links"><a href="06-founder-window-closing.html">open HTML</a> · <a href="06-founder-window-closing.txt">plain text</a></p>
+    </article>
+    <article>
+      <header>
+        <h2>Delay notice</h2>
+        <p class="slug">07-delay-notice</p>
+      </header>
+      <dl>
+        <dt>Subject</dt><dd class="ar">تأخير في طلبك — وما سنفعله<span>Your order is delayed — and what we're doing</span></dd>
+        <dt>Preheader</dt><dd class="ar">نعتذر. إليك السبب، والموعد الجديد، وخيارك.</dd>
+        <dt>When</dt><dd>The moment you know, not when you have a new date. A parent who finds out late tells other parents.</dd>
+      </dl>
+      <iframe src="07-delay-notice.html" title="Delay notice" loading="lazy"></iframe>
+      <p class="links"><a href="07-delay-notice.html">open HTML</a> · <a href="07-delay-notice.txt">plain text</a></p>
+    </article>
+  </div>
+</div></body></html>

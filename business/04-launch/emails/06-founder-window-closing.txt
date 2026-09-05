@@ -1,0 +1,39 @@
+ينتهي السعر التأسيسي بعد يومين
+The founder price ends in two days
+========================================
+
+مرسم
+
+Marsam
+
+ينتهي السعر التأسيسي بعد يومين
+Two days left at the founder price
+كنت قد أبديت اهتمامًا بـ«ألوان السعودية» يا {{first_name}}. السعر التأسيسي ينتهي {{window_end_date}}.
+You'd registered interest in Colors of Saudi Arabia, {{first_name}}. The founder price ends {{window_end_date}}.
+السعر التأسيسي
+{{founder_price}} ريال
+
+السعر بعد ذلك
+{{regular_price}} ريال
+
+ينتهي
+{{window_end_date}}
+
+احجز نسختك
+
+Reserve a copy ({{product_url}})
+
+وإذا لم يكن الوقت مناسبًا، لا بأس — لن نرسل تذكيرًا ثانيًا.
+And if the timing isn't right, that's fine — we won't send a second reminder.
+
+تصلك هذه الرسالة لأنك طلبت أن نخبرك عند الإطلاق.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT

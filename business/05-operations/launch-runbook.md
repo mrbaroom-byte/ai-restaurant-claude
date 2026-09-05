@@ -14,11 +14,12 @@ dry run.* This is the cheapest insurance in the whole plan.
 
 | Step | What must work | How you know it failed |
 |------|----------------|------------------------|
-| Order lands | Confirmation email fires, in Arabic, within a minute | A parent messaging to ask if the order went through |
+| Order lands | Confirmation email (`emails/01`) fires, in Arabic, within a minute | A parent messaging to ask if the order went through |
 | Invoice | VAT-compliant invoice issued and reaches the customer | ZATCA problem later, and a customer who cannot expense it |
 | Pick and pack | 20 units packed in a sensible time, damage-free | Corner damage, creases, a pad packed upside down |
 | Handover | Courier collects, tracking issued | Tracking that never updates |
 | Transit | Arrives flat, undamaged, on the promised date | Bent corners — the most likely physical failure |
+| Shipping + delivery mail | `emails/02` fires only once tracking is live; `emails/03` lands on delivery | A dead tracking number, or a pad still in its packaging a fortnight later |
 | Unboxing | Feels deliberate. This is the giftability the price rests on | A customer photo that looks cheap |
 | Support | A question answered same-day, in Arabic | Two days of silence |
 | **Return** | One real return processed end to end, refund actually issued | Discovering the refund path is broken with a real customer |
@@ -58,6 +59,7 @@ re-litigating on 12 November when it is inconvenient.
 - [ ] mada + cards tested with a real transaction, then refunded
 - [ ] VAT-inclusive prices verified on the live page — not just in the admin
 - [ ] Confirmation, shipping and delivery emails written in Arabic and tested
+      (`04-launch/emails/` — map every merge tag, and read each one on a phone before go-live)
 - [ ] Analytics firing; preorder events attributed to the winning cell
 - [ ] Page checked on a real phone, on mobile data, by a native Arabic reader
 
@@ -123,7 +125,8 @@ run with a fast reprint beats a big run and a warehouse.
 ## When something goes wrong
 
 ### A content or accuracy error is reported
-Run the correction protocol in `00-strategy/claim-discipline.md`. Acknowledge within two business
+Run the correction protocol in `00-strategy/claim-discipline.md`, and send `emails/05` — it is
+already drafted for exactly this, so the only work on the day is filling in the sheet number. Acknowledge within two business
 days, route to the cultural reviewer — not to marketing — publish the correction, reprint the
 sheet, and send it free to everyone who bought that run. Log it. **Do not defend the sheet while
 you are still checking it.**
@@ -134,7 +137,8 @@ stop selling the affected run, replace for anyone who asks, fix the paper, and s
 doing. Do not tell a parent they used the wrong pen.
 
 ### Delivery failure
-Refund or replace at your cost, immediately, before arguing with the courier. The margin on one
+Send `emails/07` the moment you know, not when you have a fix — it offers an immediate full
+refund. Then refund or replace at your cost, before arguing with the courier. The margin on one
 pad is not worth a public dispute, and it is a fraction of the cost of the review.
 
 ### A bad review

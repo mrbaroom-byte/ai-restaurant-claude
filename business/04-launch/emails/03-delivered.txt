@@ -1,0 +1,41 @@
+وصلك الطلب — إليك كيف تبدأون
+It's arrived — here's how to start
+========================================
+
+مرسم
+
+Marsam
+
+وصلك الطلب
+It's arrived
+نتمنى أن يعجبك يا {{first_name}}. إليك أسهل طريقة للبداية:
+We hope you like it, {{first_name}}. Here's the easiest way to start:
+١. افصل ورقة واحدة فقط — لا تعطِ الدفتر كاملًا.
+٢. اترك طفلك يختار الورقة بنفسه.
+٣. اقرأ له سؤال الاكتشاف في الأسفل، ثم اتركه يشتغل.
+٤. علّق الورقة حين ينتهي — الخلف نظيف تمامًا لهذا السبب.
+1. Tear out one sheet — don't hand over the whole pad.
+2. Let your child pick the page.
+3. Read the discovery prompt at the bottom aloud, then step back.
+4. Put it up when they finish — the back is blank for exactly this reason.
+
+سبع أوراق تحمل سؤالًا صغيرًا للحديث معًا. اختياري تمامًا — الأوراق الباقية يكملها طفلك وحده.
+Seven sheets carry a small prompt to talk about together. Entirely optional — your child can finish the rest alone.
+وإذا لاحظت أي خطأ في معلومة أو في طريقة تمثيل شيء ما، أخبرنا. نصحّح، ونعيد طباعة الورقة، ونرسلها لكل من اشترى — مجانًا.
+And if you spot an error in a fact or in how something is represented, tell us. We correct it, reprint the sheet, and send it free to everyone who bought that run.
+
+أبلغنا عن خطأ
+
+Report an error ({{correction_url}})
+
+تصلك هذه الرسالة لأنك طلبت من متجرنا.
+
+السجل التجاري: {{cr_number}} · {{contact_email}}
+
+سياسة الإرجاع ({{returns_url}}) ·
+الخصوصية ({{privacy_url}}) ·
+تصحيح خطأ في المحتوى ({{correction_url}})
+
+إلغاء الاشتراك · Unsubscribe ({{unsubscribe_url}})
+
+الأسعار شاملة ضريبة القيمة المضافة · Prices include VAT
