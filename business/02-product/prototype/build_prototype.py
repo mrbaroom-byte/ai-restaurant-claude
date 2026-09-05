@@ -34,6 +34,7 @@ import json
 import math
 import pathlib
 import random
+import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -109,12 +110,41 @@ def dots(difficulty):
     return "".join('<span class="dot">●</span>' for _ in range(difficulty))
 
 
+ART_DIR = PRODUCT / "art" / "sheets"
+
+
+def generated_art(n):
+    """Inline the generated SVG for sheet n, scaled to fill the illustration area.
+
+    Returns None when no file exists, so the art build degrades to the template's brief
+    rather than producing a silently blank page.
+    """
+    matches = sorted(ART_DIR.glob(f"{n:02d}-*.svg"))
+    if not matches:
+        return None
+    svg = matches[0].read_text(encoding="utf-8")
+    svg = re.sub(r"<\?xml[^>]*\?>", "", svg)
+    svg = re.sub(r"<!DOCTYPE[^>]*>", "", svg)
+    # Drop fixed dimensions so the viewBox drives scaling inside the flex container.
+    svg = re.sub(r'(<svg\b[^>]*?)\swidth="[^"]*"', r"\1", svg, count=1)
+    svg = re.sub(r'(<svg\b[^>]*?)\sheight="[^"]*"', r"\1", svg, count=1)
+    svg = re.sub(r"(<svg\b)", r'\1 preserveAspectRatio="xMidYMid meet"', svg, count=1)
+    return svg.strip()
+
+
 def sheet_page(s, mode, brand_ar, brand_en):
     n = s["n"]
-    art = (placeholder_art(n * 7919, s["difficulty"]) if mode == "dummy"
-           else f'<div class="artbrief"><b>Sheet {n} — illustration area</b>'
-                f'<p>{s["art"]}</p>'
-                f'<p class="verify"><b>Verify before print:</b> {s["verify"]}</p></div>')
+    if mode == "dummy":
+        art = placeholder_art(n * 7919, s["difficulty"])
+    elif mode == "art":
+        art = generated_art(n)
+        if art is None:
+            art = (f'<div class="artbrief"><b>Sheet {n} — no artwork yet</b>'
+                   f'<p>{s["art"]}</p></div>')
+    else:
+        art = (f'<div class="artbrief"><b>Sheet {n} — illustration area</b>'
+               f'<p>{s["art"]}</p>'
+               f'<p class="verify"><b>Verify before print:</b> {s["verify"]}</p></div>')
 
     talk = ""
     if s.get("talk"):
@@ -191,16 +221,28 @@ def guide_page(sheets, mode):
         f"<td>{'yes' if s.get('talk') else ''}</td></tr>"
         for s in sheets
     )
-    warn = ("" if mode == "template" else
+    if mode == "art":
+        warn = ("<p class='warn'><b>This is the ART build — generated artwork, for research "
+                "stimuli and art direction only.</b> The line art was machine-generated from the "
+                "descriptions in sheets.json. It is good enough to put in front of a child and "
+                "learn something real about engagement and difficulty. It is NOT production art: "
+                "several sheets are culturally or architecturally inaccurate, and sheets 12 and 13 "
+                "depict living craft traditions whose motifs here are invented rather than drawn "
+                "from reference. See art/ASSESSMENT.md for the sheet-by-sheet verdict.</p>")
+    else:
+        warn = ("" if mode == "template" else
             "<p class='warn'><b>This is the DUMMY build.</b> The illustration areas contain "
             "generic placeholder geometry for paper and format testing only — marker "
             "bleed-through, tear-out, crayon behaviour, trim and drop test. It does NOT test "
             "subject appeal or the difficulty of the real line art. Those need commissioned "
             "illustration; see illustrator-brief.md.</p>")
+    mode_label = {"template": "Layout template",
+                  "dummy": "Paper and format test dummy",
+                  "art": "Generated artwork - research stimuli"}[mode]
     return f"""
 <section class="page guide">
   <div class="safe">
-    <h1>Production guide<span>{'Layout template' if mode == 'template' else 'Paper and format test dummy'}</span></h1>
+    <h1>Production guide<span>{mode_label}</span></h1>
     {warn}
     <p class="warn"><b>Every fact in this pad is a draft awaiting the independent cultural and
     editorial review.</b> Nothing prints unverified. Sign off by sheet number using the log in
@@ -241,6 +283,7 @@ body {
   position: absolute; inset: 12mm; display: flex; flex-direction: column;
 }
 /* ---------- guides, only on the template build ---------- */
+.sheet.art .art svg { width: 100%; height: 100%; }
 .sheet.template .safe { outline: .3mm dashed #dfa06a; outline-offset: 0; }
 .sheet.template .safe::after {
   content: "12 mm safe margin - nothing colourable outside this line";
@@ -363,7 +406,8 @@ def build_html(mode, cfg, sheets):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=("template", "dummy", "both"), default="template")
+    ap.add_argument("--mode", choices=("template", "dummy", "art", "both", "all"),
+                    default="template")
     ap.add_argument("--no-pdf", action="store_true")
     args = ap.parse_args()
 
@@ -375,7 +419,8 @@ def main():
     print("Fonts:")
     ensure_fonts(FONT_DIR)
 
-    modes = ("template", "dummy") if args.mode == "both" else (args.mode,)
+    modes = {"both": ("template", "dummy"),
+             "all": ("template", "dummy", "art")}.get(args.mode, (args.mode,))
     for mode in modes:
         html = build_html(mode, cfg, sheets)
         html_path = HERE / f"prototype-{mode}.html"

@@ -20,7 +20,8 @@ print window if the answer arrives late. Send them now.
 - [ ] Print `prototype-dummy.pdf` on the heaviest uncoated stock to hand — the paper,
       tear-out and marker tests can start before any art exists
 - [ ] Recruit against `01-validation/01-screener.md` — 12 parents, 15 children
-- [ ] Print three unbranded prototypes for the sessions
+- [ ] Print three unbranded prototypes for the sessions — use `prototype-art.pdf`, which has
+      real colourable artwork, so the child sessions test engagement and not only paper
 - [ ] Print `01-validation/fieldpack/fieldpack.pdf` — consent forms, screener, capture and
       observation sheets, incentive log
 - [ ] **Legal review of the consent forms** before the first child session *(they are drafts,

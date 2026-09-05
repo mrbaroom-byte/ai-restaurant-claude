@@ -480,8 +480,13 @@ geometry — inventing "Arabian-style" motifs would break rule 5 above, and fake
 patterns would break it badly. Real engagement testing needs commissioned illustration; see
 `illustrator-brief.md`, which is the critical-path gap in the whole plan.
 
+- **`prototype-art.pdf`** — the same pages with machine-generated line art from `art/sheets/`.
+  Real enough to test engagement with children, **not** production art: see `art/ASSESSMENT.md`
+  for the sheet-by-sheet verdict (11 usable as stimuli, 9 needing redraw, and rule 5 broken on
+  the two craft sheets).
+
 ```
-python3 business/02-product/prototype/build_prototype.py --mode both
+python3 business/02-product/prototype/build_prototype.py --mode all
 ```
 
 ## Editorial sign-off log

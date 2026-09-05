@@ -52,8 +52,11 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
   illustrator-brief.md     Commissioning pack. THE CRITICAL-PATH GAP.
   printer-brief.md         RFQ for three printers + the acceptance test
   quality-checklist.md     Safety, print quality, the marker test, sign-off
+  art/build_prompts.py     Prompts derived from sheets.json; 20 generated SVGs
+  art/ASSESSMENT.md        Sheet-by-sheet verdict on the generated art — read before using it
   prototype/build_prototype.py → prototype-template.pdf  (illustrator + printer layout)
                               → prototype-dummy.pdf     (paper and format test pad)
+                              → prototype-art.pdf       (generated art — research stimuli)
 
 03-economics/
   build_model.py           → unit-economics.xlsx  (6 tabs, live formulas)
@@ -80,7 +83,7 @@ rename-brand.sh            Swap the masterbrand name across every asset in one c
 python3 business/01-validation/analysis/build_workbook.py   # sprint workbook
 python3 business/03-economics/build_model.py                # economics model
 python3 business/04-launch/landing/build.py                 # three landing cells
-python3 business/02-product/prototype/build_prototype.py --mode both   # the printable pad
+python3 business/02-product/prototype/build_prototype.py --mode all    # the printable pad
 python3 business/01-validation/fieldpack/build_fieldpack.py            # the field pack
 python3 business/04-launch/emails/build_emails.py                     # transactional emails
 ```
@@ -120,7 +123,13 @@ Everything else in this pack is executable by one person. Twenty pieces of origi
 art are not, and nothing in the SAR 22,000 budget covers them — the SAR 3,500 prototype line is
 for print tests, not for finished illustration.
 
-`prototype-template.pdf` closes as much of that gap as is honest: the full A4 layout with every
+`prototype-art.pdf` now carries machine-generated line art, which is enough to test engagement
+with children in September — but `art/ASSESSMENT.md` records the honest verdict: 11 of 20 sheets
+are usable as stimuli, 9 need redrawing, and the two craft sheets carry invented motifs where the
+content plan demands reference-based work. The generator is good at categories and poor at
+specific named places, which is exactly the half that carries the cultural claim.
+
+`prototype-template.pdf` closes as much of the remaining gap as is honest: the full A4 layout with every
 sheet's typography, prompts, difficulty icon and safe margin finalised, and the art direction
 printed inside each empty illustration area. An illustrator draws into it; a printer quotes
 against it. `prototype-dummy.pdf` is printable **today** for the paper tests — bleed-through,
