@@ -1,0 +1,84 @@
+# Local development: everything the ERP needs, on one machine.
+#
+#   docker compose up -d
+#   docker compose run --rm app npm run db:deploy
+#   docker compose run --rm app npm run db:seed
+#
+# Then open http://localhost:3000 and sign in with the credentials the seed prints.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: nakhla
+      POSTGRES_PASSWORD: nakhla
+      POSTGRES_DB: nakhla_erp
+      # Arabic sorts correctly under this collation, which matters for party and item lists.
+      LANG: C.UTF-8
+    ports: ['5432:5432']
+    volumes: ['db-data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nakhla -d nakhla_erp']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports: ['6379:6379']
+    volumes: ['redis-data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # S3-compatible storage for attachments and backups, so local development exercises the
+  # same code path as production.
+  storage:
+    image: minio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: nakhla
+      MINIO_ROOT_PASSWORD: nakhla-dev-secret
+    ports: ['9000:9000', '9001:9001']
+    volumes: ['storage-data:/data']
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://nakhla:nakhla@db:5432/nakhla_erp?schema=public
+      REDIS_URL: redis://redis:6379
+      # Development key only. Generate your own for anything that matters.
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-Zm9yLWxvY2FsLWRldmVsb3BtZW50LW9ubHktMzJiIQ==}
+      S3_ENDPOINT: http://storage:9000
+      S3_BUCKET: nakhla
+      AWS_ACCESS_KEY_ID: nakhla
+      AWS_SECRET_ACCESS_KEY: nakhla-dev-secret
+      APP_URL: http://localhost:3000
+    ports: ['3000:3000']
+
+  worker:
+    build: .
+    command: ['npx', 'tsx', 'src/server/jobs/worker.ts']
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://nakhla:nakhla@db:5432/nakhla_erp?schema=public
+      REDIS_URL: redis://redis:6379
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-Zm9yLWxvY2FsLWRldmVsb3BtZW50LW9ubHktMzJiIQ==}
+
+volumes:
+  db-data:
+  redis-data:
+  storage-data:

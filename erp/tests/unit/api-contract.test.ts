@@ -77,7 +77,6 @@ describe('read-only roles cannot reach a write endpoint', () => {
   })
 
   it('never lets an auditor write anything at all', () => {
-    const auditor = { userId: 'u', tenantId: 't', role: 'AUDITOR' as RoleName, branchIds: [] }
     for (const permission of ROLE_PERMISSIONS.AUDITOR) {
       expect(
         permission.endsWith('.view') || permission === 'audit.view' || permission === 'inventory.cost.view',

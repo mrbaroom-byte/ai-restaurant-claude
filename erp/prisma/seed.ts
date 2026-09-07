@@ -21,7 +21,7 @@ import { hashPassword } from '../src/lib/crypto/password'
 import { encrypt } from '../src/lib/crypto/vault'
 import { generateStampKeyPair, buildCsr, stripCertificateArmour } from '../src/lib/zatca/csr'
 import { computeDocument } from '../src/lib/tax/vat'
-import { buildSalesInvoicePosting, buildSupplierBillPosting, buildPaymentPosting } from '../src/lib/accounting/documents'
+import { buildSupplierBillPosting, buildPaymentPosting } from '../src/lib/accounting/documents'
 import { toDb, money } from '../src/lib/money'
 
 const prisma = new PrismaClient()

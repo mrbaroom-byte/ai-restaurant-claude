@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { requirePrincipal, currentLocale } from '@/server/session'
+import { totpEnrolmentRequired } from '@/server/services/auth'
 import { translator } from '@/lib/i18n/server'
 import { LOCALE_LABEL, LOCALES } from '@/lib/i18n/config'
 import { ROLE_LABELS, type Permission, can } from '@/lib/rbac'
@@ -81,6 +83,7 @@ const NAV: NavGroup[] = [
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const principal = await requirePrincipal()
+
   const locale = await currentLocale()
   const t = translator(locale)
 
@@ -96,6 +99,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const tenantName = locale === 'ar' ? tenant.tradeNameAr ?? tenant.legalNameAr : tenant.tradeNameEn ?? tenant.legalNameEn
   const userName = locale === 'ar' ? user?.nameAr ?? user?.nameEn : user?.nameEn ?? user?.nameAr
+
+  // A role that must carry a second factor sees nothing else until it has one. This is
+  // rendered rather than redirected: a redirect from a layout is not reliably followed on a
+  // client-side navigation, and a half-followed redirect leaves a blank screen.
+  // The path comes from middleware, because a server component cannot read it directly.
+  const pathname = (await headers()).get('x-pathname') ?? ''
+  const mustEnrol = !pathname.startsWith('/settings/security') && (await totpEnrolmentRequired(principal))
 
   const groups = NAV.map((group) => ({
     ...group,
@@ -180,7 +190,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
 
         <main id="main" className="flex-1 p-4 lg:p-6">
-          {children}
+          {mustEnrol ? (
+            <div className="mx-auto max-w-md card p-6 text-center">
+              <h1 className="text-base font-semibold text-ink-900">{t('auth.totp')}</h1>
+              <p className="mt-2 text-sm text-ink-600">{t('auth.totpRequired')}</p>
+              <Link href="/settings/security" className="btn-primary mt-4">
+                {t('auth.totp')}
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>

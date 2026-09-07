@@ -9,7 +9,7 @@ import {
   replayMovements,
   type StockState,
 } from '@/lib/inventory/valuation'
-import { money, sum } from '@/lib/money'
+import { sum } from '@/lib/money'
 
 describe('weighted average', () => {
   const method = 'WEIGHTED_AVERAGE' as const

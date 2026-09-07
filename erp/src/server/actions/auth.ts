@@ -32,8 +32,12 @@ export async function signInAction(_previous: SignInState, formData: FormData): 
     return { fieldError: parsed.error.issues[0]?.message }
   }
 
+  let destination = '/'
   try {
     const result = await signIn(parsed.data)
+    // A role that must carry a second factor goes straight to enrolment rather than bouncing
+    // off the dashboard.
+    if (result.totpEnrolmentRequired) destination = '/settings/security'
     const store = await cookies()
     store.set(SESSION_COOKIE, result.token, {
       httpOnly: true,
@@ -55,7 +59,7 @@ export async function signInAction(_previous: SignInState, formData: FormData): 
     throw error
   }
 
-  redirect('/')
+  redirect(destination)
 }
 
 export async function signOutAction(): Promise<void> {

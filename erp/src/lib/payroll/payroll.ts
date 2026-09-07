@@ -5,7 +5,7 @@
  * employee can see exactly what changed month to month. The run then posts one journal entry
  * for the whole payroll rather than one per employee, with employee analysis on the lines.
  */
-import { Decimal, type Money, ZERO, money, sum, toHalala } from '../money'
+import { Decimal, type Money, money, sum, toHalala } from '../money'
 import { type GosiRates, type Nationality, DEFAULT_GOSI_RATES, calculateGosi } from './gosi'
 import { type EosbInput, monthlyAccrual } from './eosb'
 import type { PostingRequest } from '../accounting/posting'

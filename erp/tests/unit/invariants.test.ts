@@ -22,7 +22,6 @@ import {
 import { buildPayrollPosting, runPayroll } from '@/lib/payroll/payroll'
 import { EMPTY_STATE, applyMovement, type StockState } from '@/lib/inventory/valuation'
 import { PostingError } from '@/lib/accounting/posting'
-import { money } from '@/lib/money'
 
 const tenantId = 't1'
 const branchId = 'jed'

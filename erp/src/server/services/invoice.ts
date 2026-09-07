@@ -13,7 +13,7 @@ import {
 } from '@/lib/tax/vat'
 import { buildCreditNotePosting, buildSalesInvoicePosting } from '@/lib/accounting/documents'
 import { INITIAL_PIH, nextChainLink } from '@/lib/zatca/hash'
-import { money, qtyToDb, sum, toDb, toHalala } from '@/lib/money'
+import { money, qtyToDb, toDb } from '@/lib/money'
 import { allocateNumber } from './sequence'
 import { moveStock } from './inventory'
 import { post } from './posting'

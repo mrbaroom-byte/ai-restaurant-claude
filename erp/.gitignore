@@ -11,3 +11,4 @@ next-env.d.ts
 playwright-report/
 test-results/
 /backups/
+tests/e2e/.auth/

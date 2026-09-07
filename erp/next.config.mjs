@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standalone output for the Docker image, which runs `node server.js`. `next start` cannot
+  // serve a standalone build, so local development and the e2e suite use the normal output.
+  ...(process.env.BUILD_STANDALONE === '1' ? { output: 'standalone' } : {}),
   reactStrictMode: true,
   poweredByHeader: false,
   // Prisma and the Node crypto used for ZATCA signing must not be bundled for the edge.

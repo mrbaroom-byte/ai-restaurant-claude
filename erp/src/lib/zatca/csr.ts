@@ -15,7 +15,6 @@ import {
   OID,
   bitString,
   contextConstructed,
-  contextPrimitive,
   fromPem,
   oid,
   octetString,

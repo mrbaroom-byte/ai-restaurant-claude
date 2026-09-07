@@ -39,6 +39,8 @@ export interface SignInResult {
   expiresAt: Date
   principal: Principal
   locale: string
+  /** True when the role must enrol a second factor before it can do anything else. */
+  totpEnrolmentRequired: boolean
 }
 
 export async function signIn(params: {
@@ -64,12 +66,14 @@ export async function signIn(params: {
   }
 
   const role = user.role as RoleName
-  if (TOTP_REQUIRED_ROLES.includes(role) || user.totpEnabled) {
+
+  // Once a second factor is enrolled it is always required. A role that must have one but has
+  // not enrolled yet signs in with the password and is then sent straight to enrolment — a
+  // brand-new Owner has no authenticator to read a code from, and locking them out of their
+  // own books on day one is not security, it is a support call.
+  if (user.totpEnabled) {
     if (!user.totpSecret) {
-      throw new AuthError(
-        'TOTP_REQUIRED',
-        'This role requires two-factor authentication. Set it up before signing in.',
-      )
+      throw new AuthError('TOTP_REQUIRED', 'Two-factor authentication is switched on but not set up. Ask the owner to reset it.')
     }
     if (!params.totpCode) throw new AuthError('TOTP_REQUIRED', 'Enter the code from your authenticator app.')
     if (!verifyTotp(decrypt(user.totpSecret), params.totpCode)) {
@@ -107,6 +111,7 @@ export async function signIn(params: {
     refreshToken,
     expiresAt,
     locale: user.locale,
+    totpEnrolmentRequired: TOTP_REQUIRED_ROLES.includes(role) && !user.totpEnabled,
     principal: {
       userId: user.id,
       tenantId: user.tenantId,
@@ -119,6 +124,16 @@ export async function signIn(params: {
 }
 
 /** Resolve a session cookie to a principal, or null when it is missing or expired. */
+export async function totpEnrolmentRequired(principal: Principal): Promise<boolean> {
+  if (!TOTP_REQUIRED_ROLES.includes(principal.role)) return false
+  if (principal.userId.startsWith('apikey:')) return false
+  const user = await prisma.user.findUnique({
+    where: { id: principal.userId },
+    select: { totpEnabled: true },
+  })
+  return !user?.totpEnabled
+}
+
 export async function principalFromToken(token: string | undefined): Promise<Principal | null> {
   if (!token) return null
 
