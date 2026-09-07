@@ -326,7 +326,7 @@ export function buildTrialBalance(rows: TrialBalanceRow[]): TrialBalance {
     const net = row.debit.minus(row.credit)
     return {
       ...row,
-      debit: net.isPositive() ? toStorage(net) : ZERO,
+      debit: net.greaterThan(0) ? toStorage(net) : ZERO,
       credit: net.isNegative() ? toStorage(net.abs()) : ZERO,
     }
   })
