@@ -6,6 +6,11 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
+    // The integration files share one PostgreSQL database and each reseeds it, so they must
+    // not run at the same time. The unit suite is fast enough that serialising costs nothing.
+    fileParallelism: false,
+    testTimeout: 30_000,
+    hookTimeout: 180_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

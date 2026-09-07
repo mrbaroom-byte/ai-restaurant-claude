@@ -5,7 +5,7 @@
  * rejects a document whose elements are correct but out of order. The builders below emit the
  * schema order, which is why they read as long flat lists rather than object spreads.
  */
-import { type XmlElement, el, leaf, toDocument } from './xml'
+import { type XmlElement, type XmlNode, el, leaf, toDocument } from './xml'
 import { type VatCategory, VAT_CATEGORY_CODE } from '../tax/vat'
 import { toAmountString } from '../money'
 import { EXT_NS } from './sign'
@@ -260,7 +260,7 @@ function isoTime(date: Date): string {
 export function buildInvoiceXml(input: UblInvoiceInput, extensions?: XmlElement): XmlElement {
   const currency = input.currencyCode ?? 'SAR'
 
-  const children: XmlElement[] = [
+  const children: XmlNode[] = [
     extensions ?? null,
     leaf('cbc:ProfileID', 'reporting:1.0'),
     leaf('cbc:ID', input.number),
