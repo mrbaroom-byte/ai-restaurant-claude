@@ -47,13 +47,15 @@ export async function signIn(page: Page, email: string): Promise<void> {
   await page.goto('/login')
   await page.fill('#email', email)
   await page.fill('#password', DEMO_PASSWORD)
-  await page.click('button[type="submit"]')
+  await page.locator('form:has(#password) button[type="submit"]').click()
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 30_000 })
 
   if (new URL(page.url()).pathname.startsWith('/settings/security')) {
     const secret = (await page.locator('code').first().innerText()).trim()
     await page.fill('#code', generateTotp(secret, currentCounter()))
-    await page.click('button[type="submit"]')
+    // Scoped to the enrolment form: the application shell also carries submit buttons for the
+    // language switch and sign-out, and an unscoped selector picks the first of those.
+    await page.locator('form:has(#code) button[type="submit"]').click()
     await page.waitForURL((url) => !url.pathname.startsWith('/settings/security'), { timeout: 30_000 })
   }
 
@@ -66,11 +68,11 @@ export async function signInWithCode(page: Page, email: string, secret: string):
   await page.goto('/login')
   await page.fill('#email', email)
   await page.fill('#password', DEMO_PASSWORD)
-  await page.click('button[type="submit"]')
+  await page.locator('form:has(#password) button[type="submit"]').click()
 
   await page.locator('#totpCode').waitFor({ state: 'visible' })
   await page.fill('#totpCode', generateTotp(secret, currentCounter()))
-  await page.click('button[type="submit"]')
+  await page.locator('form:has(#password) button[type="submit"]').click()
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 30_000 })
 }
 
@@ -94,7 +96,17 @@ export async function findClippedText(page: Page): Promise<string[]> {
     for (const element of elements) {
       const style = getComputedStyle(element)
       if (style.display === 'none' || style.visibility === 'hidden') continue
-      if (style.overflow === 'auto' || style.overflow === 'scroll' || style.overflowX === 'auto') continue
+
+      // Scrollable containers are meant to overflow; wide tables live in one.
+      if (['auto', 'scroll'].includes(style.overflow) || ['auto', 'scroll'].includes(style.overflowX)) continue
+
+      // Truncation with an ellipsis is a deliberate design choice, not a layout failure.
+      if (style.textOverflow === 'ellipsis') continue
+
+      // Screen-reader-only content is clipped to a pixel on purpose.
+      const box = element.getBoundingClientRect()
+      if (box.width <= 1 || box.height <= 1) continue
+
       // Only leaf text nodes; a container is allowed to be larger than its own text.
       if (element.children.length > 0) continue
 

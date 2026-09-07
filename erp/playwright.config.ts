@@ -31,6 +31,8 @@ const launchOptions = {
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // Seeds the database, so a re-run starts from the same state the first run did.
+  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

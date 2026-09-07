@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { AuthError, SESSION_COOKIE, signIn, signOut } from '../services/auth'
+import { sessionCookieAttributes } from '../cookies'
 import { LOCALE_COOKIE } from '../session'
 import { isLocale } from '@/lib/i18n/config'
 
@@ -40,10 +41,7 @@ export async function signInAction(_previous: SignInState, formData: FormData): 
     if (result.totpEnrolmentRequired) destination = '/settings/security'
     const store = await cookies()
     store.set(SESSION_COOKIE, result.token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
+      ...(await sessionCookieAttributes()),
       expires: result.expiresAt,
     })
     if (isLocale(result.locale)) {
