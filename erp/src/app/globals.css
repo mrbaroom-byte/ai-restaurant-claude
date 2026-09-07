@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --surface: #ffffff;
+  --canvas: #f7f8f8;
+  --border: #d8dbe0;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-[var(--canvas)] text-ink-900 antialiased;
+  }
+
+  /* Arabic sits better a little larger and with more line height than Latin at the same size. */
+  [dir='rtl'] body {
+    @apply font-arabic text-[15px] leading-7;
+  }
+
+  [dir='ltr'] body {
+    @apply text-[14px] leading-6;
+  }
+
+  /* Financial figures line up only if the digits are tabular. */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+    /* Amounts stay left-to-right even inside an Arabic sentence. */
+    direction: ltr;
+    display: inline-block;
+  }
+
+  th, td {
+    @apply text-start;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm;
+  }
+
+  .field {
+    @apply block w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm
+           outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium
+           transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300;
+  }
+
+  .btn-secondary {
+    @apply btn border border-[var(--border)] bg-white text-ink-700 hover:bg-ink-50;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .table-wrap {
+    /* Wide financial tables scroll inside their card rather than the page. */
+    @apply overflow-x-auto;
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .data-table thead th {
+    @apply border-b border-[var(--border)] bg-ink-50 px-3 py-2 text-xs font-semibold uppercase
+           tracking-wide text-ink-500;
+  }
+
+  .data-table tbody td {
+    @apply border-b border-[var(--border)] px-3 py-2;
+  }
+
+  .data-table tbody tr:hover {
+    @apply bg-ink-50/60;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  .card { border: none; box-shadow: none; }
+  @page { margin: 12mm; }
+}
