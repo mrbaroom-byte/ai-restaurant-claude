@@ -518,7 +518,44 @@ async function seedTrading(args: {
       outputValue: consumed,
     }))
 
-    // 3. A corporate catering invoice, posted through the real path.
+    // 3. Opening stock of the bought-in drinks. A restaurant does not make its own bottled
+    //    water, and a till cannot sell what the warehouse does not hold.
+    const boughtIn = [
+      { sku: 'MENU-JUICE-O', quantity: '60', unitCost: '4.10' },
+      { sku: 'MENU-WATER', quantity: '480', unitCost: '0.95' },
+      { sku: 'MENU-KABSA-L', quantity: '25', unitCost: '31.50' },
+    ]
+    let openingValue = money(0)
+    for (const line of boughtIn) {
+      const movement = await moveStock(tx, {
+        tenantId: args.tenantId,
+        itemId: args.menuById.get(line.sku)!,
+        warehouseId: args.warehouseId,
+        kind: 'OPENING',
+        date: day(1),
+        quantity: line.quantity,
+        unitCost: line.unitCost,
+        source: 'OPENING_BALANCE',
+        reference: 'OPENING',
+      })
+      openingValue = openingValue.plus(money(movement.costAmount))
+    }
+    // Opening stock is capital introduced, not a purchase: inventory against owner's equity.
+    await post(tx, {
+      tenantId: args.tenantId,
+      branchId: args.branchId,
+      date: day(1),
+      source: 'OPENING_BALANCE',
+      reference: 'OPENING',
+      memoEn: 'Opening stock',
+      memoAr: 'مخزون افتتاحي',
+      lines: [
+        { role: 'INVENTORY', debit: openingValue, memoEn: 'Opening stock', memoAr: 'مخزون افتتاحي' },
+        { role: 'SHARE_CAPITAL', credit: openingValue, memoEn: 'Capital introduced', memoAr: 'رأس مال مقدّم' },
+      ],
+    })
+
+    // 4. A corporate catering invoice, posted through the real path.
     const invoice = await createDraft(tx, {
       tenantId: args.tenantId,
       branchId: args.branchId,
@@ -536,7 +573,7 @@ async function seedTrading(args: {
     })
     const posted = await postInvoice(tx, { tenantId: args.tenantId, invoiceId: invoice.id })
 
-    // 4. The customer pays half of it.
+    // 5. The customer pays half of it.
     const half = money(invoice.payableTotal.toString()).div(2)
     await post(tx, buildPaymentPosting({
       context: { tenantId: args.tenantId, branchId: args.branchId, date: day(12), reference: 'RCT-DEMO-1', partyId: args.corporateCustomer },

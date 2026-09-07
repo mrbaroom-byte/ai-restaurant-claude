@@ -83,13 +83,17 @@ seed fails loudly if the books it produces do not balance.
 ```sh
 npm run lint          # ESLint, including rules that keep floats and Prisma out of the domain
 npm run typecheck
-npm test              # 345 tests: unit and integration
-npm run test:coverage
-npm run test:e2e      # Playwright, at 1280px and 390px, in Arabic
+npm test              # 348 tests: unit and integration
+npm run test:coverage # 90% of the domain core
+npm run test:e2e      # 89 Playwright tests, at 1280px and 390px, in Arabic
 ```
 
 The integration tests need PostgreSQL — they exercise the row-locked sequence, the deferred
 balance trigger and the idempotent POS replay, none of which exist without a database.
+
+**Run the two suites one at a time.** Both reseed the same database, so running them together
+means each is testing state the other is halfway through changing. CI keeps them in separate
+jobs for the same reason.
 
 Three operational checks are also worth running, and CI runs all three:
 

@@ -167,6 +167,11 @@ is what an auditor expects; weight is what a container freight bill actually fol
 20% trim consumes 1.25 kg. The alternative reading — consume 1 kg and write 0.2 kg off — makes
 the recipe cost wrong.
 
+**D-031a — An invoice may be credited more than once, but never beyond what it carried.**
+Three items returned this week and two the next is an ordinary case, so partial credits
+accumulate; the limit is the original quantity less what previous notes already took, and a
+fully credited invoice refuses a further note rather than reversing itself twice.
+
 **D-031 — `stock_balances` is a cache of `stock_movements`.** The movements are append-only and
 the balance is rebuildable; `pnpm stock:rebuild` recomputes it and reports drift, and CI runs it.
 
@@ -258,6 +263,7 @@ The brief describes eleven modules. What is built and tested end to end:
 | M6 Purchasing | Bills, landed cost, withholding tax, expenses — model and postings |
 | M7 Inventory | Full: WAVG/FIFO, BOM, production, movements, rebuild |
 | M8 POS | Session, tenders, offline queue and idempotent replay, till variance |
+
 | M9 HR & payroll | Full: GOSI, overtime, EOSB, payslips, WPS, balanced posting |
 | M10 Reporting | Trial balance, P&L, balance sheet, cash flow, VAT return, aging, dashboard |
 | M11 Integrations | REST API + OpenAPI, health, encrypted backup with verified restore |
