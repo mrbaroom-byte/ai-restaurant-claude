@@ -33,14 +33,45 @@ function requireEnv(name: string): string {
   return value
 }
 
+/**
+ * Prisma connection strings carry parameters libpq has never heard of — `schema`,
+ * `connection_limit`, `pgbouncer` — and `pg_dump` refuses the whole URL rather than ignoring
+ * them. Keep only what libpq understands, and carry the schema across as a search path.
+ */
+const LIBPQ_PARAMETERS = new Set([
+  'sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'connect_timeout', 'application_name',
+  'options', 'target_session_attrs', 'host', 'hostaddr',
+])
+
+export function toLibpqUrl(databaseUrl: string): { url: string; schema: string | null } {
+  const parsed = new URL(databaseUrl)
+  const schema = parsed.searchParams.get('schema')
+
+  for (const key of [...parsed.searchParams.keys()]) {
+    if (!LIBPQ_PARAMETERS.has(key)) parsed.searchParams.delete(key)
+  }
+  return { url: parsed.toString(), schema }
+}
+
 /** Dump, compress and encrypt. The nonce is written as the first 12 bytes of the archive. */
 async function createArchive(databaseUrl: string, target: string): Promise<{ path: string; bytes: number }> {
   const dumpPath = `${target}.sql`
+  const { url, schema } = toLibpqUrl(databaseUrl)
 
   // --no-owner keeps the dump restorable into a database owned by a different role.
-  const dump = spawnSync('pg_dump', ['--no-owner', '--no-privileges', '--format=plain', '--file', dumpPath, databaseUrl], {
-    encoding: 'utf8',
-  })
+  const dump = spawnSync(
+    'pg_dump',
+    [
+      '--no-owner',
+      '--no-privileges',
+      '--format=plain',
+      ...(schema ? ['--schema', schema] : []),
+      '--file',
+      dumpPath,
+      url,
+    ],
+    { encoding: 'utf8' },
+  )
   if (dump.status !== 0) {
     throw new Error(`pg_dump failed: ${dump.stderr || dump.stdout}`)
   }
@@ -89,13 +120,13 @@ async function restoreArchive(archive: string, sqlPath: string): Promise<void> {
  */
 async function verifyArchive(archive: string, databaseUrl: string): Promise<void> {
   const scratchName = `nakhla_restore_check_${Date.now()}`
-  const base = new URL(databaseUrl)
-  const adminUrl = new URL(databaseUrl)
-  adminUrl.pathname = '/postgres'
+  const { url: libpqUrl } = toLibpqUrl(databaseUrl)
 
+  const adminUrl = new URL(libpqUrl)
+  adminUrl.pathname = '/postgres'
   execFileSync('psql', [adminUrl.toString(), '-c', `CREATE DATABASE ${scratchName}`], { stdio: 'pipe' })
 
-  const scratchUrl = new URL(databaseUrl)
+  const scratchUrl = new URL(libpqUrl)
   scratchUrl.pathname = `/${scratchName}`
 
   const dir = mkdtempSync(join(tmpdir(), 'nakhla-restore-'))
@@ -126,7 +157,6 @@ async function verifyArchive(archive: string, databaseUrl: string): Promise<void
   } finally {
     rmSync(dir, { recursive: true, force: true })
     execFileSync('psql', [adminUrl.toString(), '-c', `DROP DATABASE IF EXISTS ${scratchName}`], { stdio: 'pipe' })
-    void base
   }
 }
 
@@ -168,7 +198,10 @@ async function main() {
   process.stdout.write('Done.\n')
 }
 
-main().catch((error) => {
-  process.stderr.write(`Backup failed: ${error instanceof Error ? error.message : String(error)}\n`)
-  process.exitCode = 1
-})
+// Importing this file for its helpers must not start a backup.
+if (process.argv[1]?.endsWith('backup.ts')) {
+  main().catch((error) => {
+    process.stderr.write(`Backup failed: ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exitCode = 1
+  })
+}

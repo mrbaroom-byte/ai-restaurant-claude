@@ -258,13 +258,13 @@ The brief describes eleven modules. What is built and tested end to end:
 | M1 Core & settings | Tenant, branches, users, roles, gap-free sequences, audit log, RLS |
 | M2 CoA & GL | Full: posting engine, periods, FX on settlement, trial balance |
 | M3 Contacts | Party model, National Address, aging, statements as data |
-| M4 Sales | Invoice, credit note, payments, price lists, VAT categories |
+| M4 Sales | Invoice, credit note, receipts with allocation, price lists, VAT categories |
 | M5 ZATCA | Full: UBL, hash chain, TLV QR, XAdES-B, CSR, onboarding, clearance and reporting |
 | M6 Purchasing | Bills, landed cost, withholding tax, expenses — model and postings |
 | M7 Inventory | Full: WAVG/FIFO, BOM, production, movements, rebuild |
 | M8 POS | Session, tenders, offline queue and idempotent replay, till variance |
 
-| M9 HR & payroll | Full: GOSI, overtime, EOSB, payslips, WPS, balanced posting |
+| M9 HR & payroll | Full: run, review, post, payslips, WPS export, loans, EOSB carry-forward |
 | M10 Reporting | Trial balance, P&L, balance sheet, cash flow, VAT return, aging, dashboard |
 | M11 Integrations | REST API + OpenAPI, health, encrypted backup with verified restore |
 
@@ -276,3 +276,10 @@ outbound webhooks, and scheduled report email. Server-side PDF rendering is not 
 either — every document prints from the browser with a print stylesheet, which produces a
 correct PDF via the print dialogue but is not the same as a generated file. Each is additive:
 the ledger, the tax engine and the ZATCA chain they would post through are finished and tested.
+
+**Not verifiable here.** Clearance against ZATCA's live sandbox needs a real VAT registration
+and a Fatoora portal account to obtain a CSID. The client, the CSR, the signing and both
+submission models are implemented and tested against the specification's structures and against
+a stubbed endpoint; `docs/ZATCA-SANDBOX.md` walks through what a taxpayer does with real
+credentials. `docs/ACCEPTANCE.md` states this against the criterion it affects rather than
+leaving it implied.

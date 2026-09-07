@@ -235,6 +235,12 @@ Report a security issue privately rather than through the issue tracker.
 
 ---
 
+## Does it meet the brief?
+
+[`docs/ACCEPTANCE.md`](docs/ACCEPTANCE.md) takes each acceptance criterion in turn, says how it
+is verified and by which test, and says plainly where something is not fully verifiable in this
+build — live ZATCA clearance and generated PDFs — rather than leaving it implied.
+
 ## User guides
 
 - [English](docs/guide/en.md)
