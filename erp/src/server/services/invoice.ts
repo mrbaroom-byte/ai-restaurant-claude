@@ -401,19 +401,49 @@ export async function createCreditNote(tx: Tx, params: CreditNoteParams) {
     )
   }
 
-  const creditedLines = (params.lines ?? invoice.lines.map((l) => ({ invoiceLineId: l.id, quantity: l.quantity.toString() })))
-    .map((requested) => {
-      const original = invoice.lines.find((l) => l.id === requested.invoiceLineId)
-      if (!original) throw new InvoiceError('BAD_LINE', 'A credited line does not belong to this invoice.', 'أحد أسطر الإشعار لا ينتمي لهذه الفاتورة.')
-      if (money(requested.quantity).greaterThan(money(original.quantity.toString()))) {
-        throw new InvoiceError(
-          'OVER_CREDIT',
-          `Cannot credit ${requested.quantity} of ${original.descriptionEn}; the invoice has only ${original.quantity.toString()}.`,
-          `لا يمكن إصدار إشعار دائن بكمية ${requested.quantity} من ${original.descriptionEn}؛ الفاتورة تحتوي على ${original.quantity.toString()} فقط.`,
-        )
-      }
-      return { original, quantity: requested.quantity }
-    })
+  // What has already been credited, line by line. An invoice can be credited more than once —
+  // three items returned this week and two the next — but never for more than it carried, so
+  // the limit is the original quantity less what previous notes already took.
+  const alreadyCredited = await creditedQuantities(tx, params.tenantId, invoice.id)
+
+  const requestedLines =
+    params.lines ??
+    invoice.lines
+      .map((line) => ({
+        invoiceLineId: line.id,
+        quantity: money(line.quantity.toString()).minus(alreadyCredited.get(line.id) ?? money(0)).toString(),
+      }))
+      .filter((line) => money(line.quantity).greaterThan(0))
+
+  if (requestedLines.length === 0) {
+    throw new InvoiceError(
+      'FULLY_CREDITED',
+      `Invoice ${invoice.number} has already been credited in full.`,
+      `الفاتورة ${invoice.number} تم إصدار إشعار دائن بكامل قيمتها من قبل.`,
+    )
+  }
+
+  const creditedLines = requestedLines.map((requested) => {
+    const original = invoice.lines.find((l) => l.id === requested.invoiceLineId)
+    if (!original) throw new InvoiceError('BAD_LINE', 'A credited line does not belong to this invoice.', 'أحد أسطر الإشعار لا ينتمي لهذه الفاتورة.')
+
+    const remaining = money(original.quantity.toString()).minus(alreadyCredited.get(original.id) ?? money(0))
+    if (money(requested.quantity).greaterThan(remaining)) {
+      throw new InvoiceError(
+        'OVER_CREDIT',
+        `Cannot credit ${requested.quantity} of ${original.descriptionEn}; only ${remaining.toFixed(3)} of the invoiced quantity has not been credited yet.`,
+        `لا يمكن إصدار إشعار دائن بكمية ${requested.quantity} من ${original.descriptionEn}؛ المتبقي غير المُشعَر به ${remaining.toFixed(3)} فقط.`,
+      )
+    }
+    if (money(requested.quantity).lessThanOrEqualTo(0)) {
+      throw new InvoiceError(
+        'BAD_QUANTITY',
+        `A credit note line needs a positive quantity; ${original.descriptionEn} was given ${requested.quantity}.`,
+        `سطر الإشعار الدائن يحتاج كمية موجبة؛ الصنف ${original.descriptionEn} أُعطي ${requested.quantity}.`,
+      )
+    }
+    return { original, quantity: requested.quantity }
+  })
 
   const totals = await computeTotals(
     tx,
@@ -551,6 +581,38 @@ export async function createCreditNote(tx: Tx, params: CreditNoteParams) {
   })
 
   return { creditNoteId: creditNote.id, number, entryId: posted.entryId }
+}
+
+/**
+ * How much of each invoice line has already been credited.
+ *
+ * Credit notes carry the original line's description and item, but not its id, so the match is
+ * by line number — which is stable because a posted invoice's lines never change.
+ */
+async function creditedQuantities(tx: Tx, tenantId: string, invoiceId: string) {
+  const notes = await tx.invoice.findMany({
+    where: { tenantId, originalInvoiceId: invoiceId, status: { not: 'DRAFT' } },
+    include: { lines: { select: { itemId: true, descriptionEn: true, quantity: true } } },
+  })
+
+  const original = await tx.invoice.findUniqueOrThrow({
+    where: { id: invoiceId },
+    include: { lines: { select: { id: true, itemId: true, descriptionEn: true } } },
+  })
+
+  const byLine = new Map<string, ReturnType<typeof money>>()
+  for (const note of notes) {
+    for (const noteLine of note.lines) {
+      const match = original.lines.find(
+        (line) =>
+          (noteLine.itemId && line.itemId === noteLine.itemId) ||
+          (!noteLine.itemId && line.descriptionEn === noteLine.descriptionEn),
+      )
+      if (!match) continue
+      byLine.set(match.id, (byLine.get(match.id) ?? money(0)).plus(money(noteLine.quantity.toString())))
+    }
+  }
+  return byLine
 }
 
 /** Outstanding balance on an invoice, used by the aging report and the payment screen. */

@@ -219,6 +219,7 @@ export const trialBalanceResponse = z.object({
 export const ENDPOINTS = [
   { method: 'POST', path: '/api/v1/auth/login', permission: null, summary: 'Sign in and receive a session token', request: loginRequest, response: loginResponse },
   { method: 'POST', path: '/api/v1/auth/logout', permission: null, summary: 'Revoke the current session' },
+  { method: 'GET', path: '/api/v1/branches', permission: 'settings.view', summary: 'List branches and their warehouses' },
   { method: 'GET', path: '/api/v1/parties', permission: 'contacts.view', summary: 'List customers and suppliers' },
   { method: 'POST', path: '/api/v1/parties', permission: 'contacts.manage', summary: 'Create a customer or supplier', request: partyRequest },
   { method: 'GET', path: '/api/v1/items', permission: 'inventory.view', summary: 'List items, optionally by barcode' },

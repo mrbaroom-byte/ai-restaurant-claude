@@ -46,8 +46,15 @@ function toJsonSchema(schema: z.ZodTypeAny): Schema {
     case 'ZodOptional':
     case 'ZodNullable':
       return toJsonSchema(def.innerType as z.ZodTypeAny)
-    case 'ZodDefault':
-      return { ...toJsonSchema(def.innerType as z.ZodTypeAny), default: (def.defaultValue as () => unknown)() }
+    case 'ZodDefault': {
+      const inner = toJsonSchema(def.innerType as z.ZodTypeAny)
+      const value = (def.defaultValue as () => unknown)()
+      // A default computed at generation time — `new Date()` — would differ on every run and
+      // make the "spec is up to date" check in CI fail for no reason. Describe it instead.
+      if (value instanceof Date) return { ...inner, description: 'Defaults to the current time.' }
+      if (value !== null && typeof value === 'object') return inner
+      return { ...inner, default: value }
+    }
     case 'ZodEffects':
       return toJsonSchema(def.schema as z.ZodTypeAny)
     case 'ZodUnion':

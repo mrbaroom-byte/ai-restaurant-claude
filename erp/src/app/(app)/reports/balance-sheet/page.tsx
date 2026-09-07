@@ -23,7 +23,7 @@ function Column({
   extra?: { label: string; amount: Money }
 }) {
   return (
-    <section className="card">
+    <section className="card table-wrap">
       <h2 className="border-b border-[var(--border)] px-4 py-3 text-sm font-semibold text-ink-800">{title}</h2>
       <table className="data-table">
         <tbody>

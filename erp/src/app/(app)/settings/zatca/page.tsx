@@ -60,6 +60,8 @@ export default async function ZatcaSettingsPage() {
           <h2 className="border-b border-[var(--border)] px-4 py-3 text-sm font-semibold text-ink-800">
             {t('zatca.deviceSerial')}
           </h2>
+          {/* The EGS serial is long by design; it scrolls here rather than widening the page. */}
+          <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
@@ -93,6 +95,7 @@ export default async function ZatcaSettingsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
       )}
 

@@ -234,6 +234,61 @@ describe('credit note', () => {
     expect(money(after.debit).greaterThan(money(before.debit))).toBe(true)
   }, 60_000)
 
+  it('refuses a second credit note once the invoice is fully credited', async () => {
+    const { branch, warehouse } = await jeddah()
+    const item = await db().item.findFirstOrThrow({ where: { tenantId: TENANT_ID, sku: 'MENU-WATER' } })
+    const customer = await db().party.findFirstOrThrow({ where: { tenantId: TENANT_ID, code: 'CUS-0001' } })
+
+    const { moveStock } = await import('@/server/services/inventory')
+    await asTenant((tx) =>
+      moveStock(tx, {
+        tenantId: TENANT_ID, itemId: item.id, warehouseId: warehouse.id, kind: 'RECEIPT',
+        date: new Date(), quantity: '50', unitCost: '1.20', source: 'OPENING',
+      }),
+    )
+
+    const posted = await asTenant(async (tx) => {
+      const draft = await createDraft(tx, {
+        tenantId: TENANT_ID, branchId: branch.id, kind: 'STANDARD', date: new Date(), partyId: customer.id,
+        lines: [{ itemId: item.id, descriptionEn: 'Mineral water', quantity: '10', unitPrice: '3.00', warehouseId: warehouse.id }],
+      })
+      return postInvoice(tx, { tenantId: TENANT_ID, invoiceId: draft.id })
+    })
+
+    // Credit six of the ten.
+    const first = await db().invoice.findFirstOrThrow({ where: { id: posted.invoiceId }, include: { lines: true } })
+    await asTenant((tx) =>
+      createCreditNote(tx, {
+        tenantId: TENANT_ID, invoiceId: posted.invoiceId, date: new Date(), reason: 'إرجاع جزئي',
+        lines: [{ invoiceLineId: first.lines[0].id, quantity: '6' }],
+      }),
+    )
+
+    // Four remain: crediting five must be refused, and the message says how many are left.
+    await expect(
+      asTenant((tx) =>
+        createCreditNote(tx, {
+          tenantId: TENANT_ID, invoiceId: posted.invoiceId, date: new Date(), reason: 'إرجاع',
+          lines: [{ invoiceLineId: first.lines[0].id, quantity: '5' }],
+        }),
+      ),
+    ).rejects.toThrow(/only 4\.000 of the invoiced quantity/)
+
+    // Crediting the remaining four is fine, and defaults to exactly those four.
+    const second = await asTenant((tx) =>
+      createCreditNote(tx, { tenantId: TENANT_ID, invoiceId: posted.invoiceId, date: new Date(), reason: 'إرجاع الباقي' }),
+    )
+    const secondNote = await db().invoice.findFirstOrThrow({ where: { id: second.creditNoteId }, include: { lines: true } })
+    expect(money(secondNote.lines[0].quantity.toString()).toFixed(0)).toBe('4')
+
+    // And nothing is left to credit.
+    await expect(
+      asTenant((tx) =>
+        createCreditNote(tx, { tenantId: TENANT_ID, invoiceId: posted.invoiceId, date: new Date(), reason: 'مرة أخرى' }),
+      ),
+    ).rejects.toThrow(/already been credited in full/)
+  }, 60_000)
+
   it('refuses to credit more than the invoice carried', async () => {
     const invoice = await db().invoice.findFirstOrThrow({
       where: { tenantId: TENANT_ID, documentType: 'TAX_INVOICE', status: { not: 'DRAFT' } },
