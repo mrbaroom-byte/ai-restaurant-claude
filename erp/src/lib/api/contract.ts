@@ -140,6 +140,24 @@ export const invoiceResponse = z.object({
   zatcaStatus: z.string().nullable(),
 })
 
+// ── Payments ──────────────────────────────────────────────────────────────────────────────
+
+export const paymentRequest = z.object({
+  branchId: uuid,
+  partyId: uuid,
+  direction: z.enum(['RECEIPT', 'PAYMENT']).default('RECEIPT'),
+  date: z.coerce.date(),
+  method: z.enum(['CASH', 'BANK_TRANSFER', 'MADA', 'CARD', 'CHEQUE', 'STC_PAY']),
+  amount: decimalString,
+  bankCharges: decimalString.optional(),
+  reference: z.string().optional(),
+  notes: z.string().optional(),
+  /** Which invoices or bills this settles. Money left unallocated sits on account. */
+  allocations: z
+    .array(z.object({ invoiceId: uuid.optional(), billId: uuid.optional(), amount: decimalString }))
+    .default([]),
+})
+
 // ── POS ───────────────────────────────────────────────────────────────────────────────────
 
 export const posSyncRequest = z.object({
@@ -192,6 +210,25 @@ export const posSyncResponse = z.object({
   ),
 })
 
+// ── Payroll ───────────────────────────────────────────────────────────────────────────────
+
+export const payrollRunRequest = z.object({
+  branchId: uuid,
+  periodStart: z.coerce.date(),
+  periodEnd: z.coerce.date(),
+  /** Per-employee variables for the month, keyed by employee id. */
+  adjustments: z
+    .record(
+      uuid,
+      z.object({
+        overtimeHours: decimalString.optional(),
+        unpaidLeaveDays: z.number().int().min(0).max(31).optional(),
+        otherDeduction: decimalString.optional(),
+      }),
+    )
+    .optional(),
+})
+
 // ── Reports ───────────────────────────────────────────────────────────────────────────────
 
 export const reportQuery = z.object({
@@ -230,10 +267,15 @@ export const ENDPOINTS = [
   { method: 'POST', path: '/api/v1/invoices/{id}/post', permission: 'sales.post', summary: 'Post a draft: number, stock, ledger, ZATCA', response: invoiceResponse },
   { method: 'POST', path: '/api/v1/invoices/{id}/credit-note', permission: 'sales.credit', summary: 'Issue a credit note', request: creditNoteRequest, response: invoiceResponse },
   { method: 'GET', path: '/api/v1/invoices/{id}/xml', permission: 'sales.view', summary: 'Download the signed UBL document' },
+  { method: 'POST', path: '/api/v1/payments', permission: 'sales.payment', summary: 'Record a receipt or a supplier payment and allocate it', request: paymentRequest },
   { method: 'POST', path: '/api/v1/pos/sync', permission: 'pos.operate', summary: 'Replay offline point-of-sale sales', request: posSyncRequest, response: posSyncResponse },
   { method: 'GET', path: '/api/v1/reports/trial-balance', permission: 'accounting.view', summary: 'Trial balance', response: trialBalanceResponse },
   { method: 'GET', path: '/api/v1/reports/profit-loss', permission: 'accounting.view', summary: 'Profit and loss' },
   { method: 'GET', path: '/api/v1/reports/balance-sheet', permission: 'accounting.view', summary: 'Balance sheet' },
   { method: 'GET', path: '/api/v1/reports/vat-return', permission: 'accounting.view', summary: 'VAT return with source documents' },
   { method: 'GET', path: '/api/v1/reports/aging', permission: 'contacts.view', summary: 'Receivables or payables aging' },
+  { method: 'GET', path: '/api/v1/payroll/runs', permission: 'payroll.view', summary: 'List payroll runs' },
+  { method: 'POST', path: '/api/v1/payroll/runs', permission: 'payroll.run', summary: 'Calculate a payroll run for a branch and period', request: payrollRunRequest },
+  { method: 'POST', path: '/api/v1/payroll/runs/{id}/post', permission: 'payroll.post', summary: 'Post a calculated payroll run to the ledger' },
+  { method: 'GET', path: '/api/v1/payroll/runs/{id}/wps', permission: 'payroll.wps', summary: 'Download the Wage Protection System file' },
 ] as const

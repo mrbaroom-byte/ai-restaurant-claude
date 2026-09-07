@@ -11,6 +11,8 @@ import { SequenceError } from '@/lib/sequence'
 import { ZatcaValidationError } from '@/lib/zatca'
 import { WpsValidationError } from '@/lib/payroll/wps'
 import { InvoiceError } from '@/server/services/invoice'
+import { PaymentError } from '@/server/services/payment'
+import { PayrollError } from '@/server/services/payroll'
 import { AuthError } from '@/server/services/auth'
 import { currentPrincipal } from '@/server/session'
 import type { Principal } from '@/lib/rbac'
@@ -47,6 +49,12 @@ export function errorResponse(error: unknown, locale: 'ar' | 'en' = 'en'): NextR
   if (error instanceof PostingError) return fail(error.code, arabic ? error.messageAr : error.message, 409)
   if (error instanceof StockError) return fail(error.code, arabic ? error.messageAr : error.message, 409)
   if (error instanceof InvoiceError) return fail(error.code, arabic ? error.messageAr : error.message, 409)
+  if (error instanceof PaymentError) return fail(error.code, arabic ? error.messageAr : error.message, 409)
+  if (error instanceof PayrollError) {
+    // A file the bank would reject is a validation problem, not a conflict.
+    const status = error.code === 'WPS_INVALID' ? 422 : 409
+    return fail(error.code, arabic ? error.messageAr : error.message, status)
+  }
   if (error instanceof SequenceError) return fail('SEQUENCE', arabic ? error.messageAr : error.message, 409)
   if (error instanceof ZatcaValidationError) return fail('ZATCA_VALIDATION', error.message, 422)
   if (error instanceof WpsValidationError) return fail('WPS_VALIDATION', error.message, 422)

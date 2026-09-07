@@ -5,6 +5,8 @@ import { Amount, DateText, EmptyState, StatusBadge } from '@/components/format'
 import { DataTable, PageHeader } from '@/components/page'
 import { DEFAULT_GOSI_RATES } from '@/lib/payroll/gosi'
 import { money } from '@/lib/money'
+import { can } from '@/lib/rbac'
+import { PostRun, RunPayroll } from './actions-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,15 +15,49 @@ export default async function PayrollPage() {
   const locale = await currentLocale()
   const t = translator(locale)
 
-  const runs = await prisma.payrollRun.findMany({
-    where: { tenantId: principal.tenantId, deletedAt: null },
-    include: { _count: { select: { payslips: true } } },
-    orderBy: { periodStart: 'desc' },
-  })
+  const [runs, branches] = await Promise.all([
+    prisma.payrollRun.findMany({
+      where: { tenantId: principal.tenantId, deletedAt: null },
+      include: { _count: { select: { payslips: true } } },
+      orderBy: { periodStart: 'desc' },
+    }),
+    prisma.branch.findMany({
+      where: {
+        tenantId: principal.tenantId,
+        active: true,
+        ...(principal.branchIds.length ? { id: { in: principal.branchIds } } : {}),
+      },
+      orderBy: { code: 'asc' },
+    }),
+  ])
+
+  const now = new Date()
+  const defaultPeriod = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
 
   return (
     <div className="space-y-4">
       <PageHeader title={t('nav.payroll')} />
+
+      {can(principal, 'payroll.run') && branches.length > 0 && (
+        <RunPayroll
+          branches={branches.map((branch) => ({
+            id: branch.id,
+            code: branch.code,
+            name: locale === 'ar' ? branch.nameAr : branch.nameEn,
+          }))}
+          defaultPeriod={defaultPeriod}
+          labels={{
+            title: locale === 'ar' ? 'احتساب مسير رواتب' : 'Calculate a payroll run',
+            period: locale === 'ar' ? 'الشهر' : 'Month',
+            branch: locale === 'ar' ? 'الفرع' : 'Branch',
+            submit: locale === 'ar' ? 'احتساب' : 'Calculate',
+            hint:
+              locale === 'ar'
+                ? 'يُحتسب المسير أولاً كمسودة بلا أثر محاسبي. راجعه، ثم رحّله، ثم نزّل ملف حماية الأجور للبنك.'
+                : 'A run is calculated as a draft with no accounting effect. Review it, post it, then download the WPS file for the bank.',
+          }}
+        />
+      )}
 
       <section className="card p-4">
         <h2 className="mb-2 text-sm font-semibold text-ink-800">
@@ -76,6 +112,22 @@ export default async function PayrollPage() {
               { key: 'eosb', header: locale === 'ar' ? 'نهاية الخدمة' : 'End of service', numeric: true, render: (run, l) => <Amount value={run.totalEosbAccrual.toString()} locale={l} muted /> },
               { key: 'net', header: locale === 'ar' ? 'الصافي' : 'Net', numeric: true, render: (run, l) => <Amount value={run.totalNet.toString()} locale={l} /> },
               { key: 'status', header: t('invoice.status'), render: (run) => <StatusBadge status={run.status} label={t(`status.${run.status}`)} /> },
+              {
+                key: 'actions',
+                header: t('app.actions'),
+                render: (run, l) => (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {run.status === 'DRAFT' && can(principal, 'payroll.post') && (
+                      <PostRun payrollRunId={run.id} label={l === 'ar' ? 'ترحيل' : 'Post'} />
+                    )}
+                    {can(principal, 'payroll.wps') && (
+                      <a href={`/api/v1/payroll/runs/${run.id}/wps`} className="btn-secondary px-3 py-1 text-xs">
+                        WPS
+                      </a>
+                    )}
+                  </div>
+                ),
+              },
             ]}
           />
         )}

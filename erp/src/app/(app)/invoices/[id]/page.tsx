@@ -8,7 +8,7 @@ import { Amount, DateText, Quantity, StatusBadge } from '@/components/format'
 import { formatDualDate } from '@/lib/i18n/config'
 import { can } from '@/lib/rbac'
 import { money } from '@/lib/money'
-import { CreditNoteButton, PostInvoiceButton, PrintButton } from './actions-client'
+import { CreditNoteButton, PostInvoiceButton, PrintButton, RecordPaymentButton } from './actions-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -69,6 +69,25 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           )}
           {invoice.status !== 'DRAFT' &&
             invoice.documentType === 'TAX_INVOICE' &&
+            invoice.partyId &&
+            outstanding.greaterThan(0) &&
+            can(principal, 'sales.payment') && (
+              <RecordPaymentButton
+                invoiceId={invoice.id}
+                branchId={invoice.branchId}
+                partyId={invoice.partyId}
+                outstanding={outstanding.toFixed(2)}
+                locale={locale}
+                labels={{
+                  record: locale === 'ar' ? 'تسجيل سند قبض' : 'Record payment',
+                  amount: t('invoice.payable'),
+                  method: locale === 'ar' ? 'طريقة الدفع' : 'Method',
+                  cancel: t('app.cancel'),
+                }}
+              />
+            )}
+          {invoice.status !== 'DRAFT' &&
+            invoice.documentType === 'TAX_INVOICE' &&
             can(principal, 'sales.credit') && (
               <CreditNoteButton
                 invoiceId={invoice.id}
@@ -109,6 +128,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border)] pb-4">
           <div>
             {/* ZATCA requires the document title in Arabic on every invoice. */}
+            <span className="no-print mb-2 block">
+              <StatusBadge status={invoice.status} label={t(`status.${invoice.status}`)} />
+            </span>
             <h1 className="font-arabic text-lg font-bold text-ink-900">
               {locale === 'ar' ? t(titleKey) : `${t(titleKey)} / `}
               {locale !== 'ar' && <span className="font-arabic">{titleKeyArabic(titleKey)}</span>}
