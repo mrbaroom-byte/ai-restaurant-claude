@@ -1,0 +1,18 @@
+node_modules/
+npm-debug.log*
+
+# Personal health data - NEVER commit. See README "Privacy".
+config/profile.json
+config/*.local.json
+data/
+*.sqlite
+*.db
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+out/

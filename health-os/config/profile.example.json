@@ -1,0 +1,152 @@
+{
+  "_readme": "Copy to config/profile.json and fill in with real data. config/profile.json is gitignored and must stay that way - it is personal health data.",
+  "user": {
+    "name": "Example User",
+    "dob": "1980-01-01",
+    "height_cm": 175,
+    "timezone": "Asia/Riyadh",
+    "locale": "ar-SA",
+    "city": "Your City"
+  },
+  "coach": {
+    "language": "ar",
+    "technical_language": "en",
+    "register": "Saudi Arabic, professional, not stilted",
+    "style_rules": [
+      "Lead with the recommendation. No option lists unless asked.",
+      "One action per nudge, never five.",
+      "Celebrate streaks, name drift plainly.",
+      "Calibrate to the evidence: 'roughly 550 kcal, 28 g protein', never '552 kcal, 28.4 g'.",
+      "Never flatter. If a week was bad, say so and move to the fix."
+    ]
+  },
+  "clinical": {
+    "headline": "One sentence naming the primary problem the system exists to move.",
+    "notes": [
+      "Free-text clinical context the coach should hold. One item per line."
+    ],
+    "pending": [
+      "Tests requested but not yet done."
+    ]
+  },
+  "training": {
+    "block": {
+      "name": "Restart block",
+      "start_date": "2026-01-05",
+      "end_date": "2026-02-02",
+      "rule": "Never miss twice. One skipped day is weather. Two is how the last block ended."
+    },
+    "zone2": {
+      "hr_low": 110,
+      "hr_high": 125,
+      "calibration_note": "True zone 2 sits inside the wearable's 'Zone 1' band. Never chase the app's Zone 2 bar.",
+      "modes": ["elliptical", "incline walk", "bike"],
+      "timing": "Indoors, or before 07:00."
+    },
+    "weekly_template": {
+      "1": ["zone2", "strength_a"],
+      "2": ["zone2"],
+      "3": ["zone2", "strength_b"],
+      "4": ["zone2"],
+      "5": ["zone2"],
+      "6": ["walk_long"],
+      "7": ["rest"]
+    },
+    "progression": [
+      { "week": 1, "zone2_min": 20, "sessions": 5, "steps": 4000, "rpe": "6", "strength": "2 sets, RPE 6" },
+      { "week": 2, "zone2_min": 20, "sessions": 5, "steps": 5000, "rpe": "6-7", "strength": "2 sets, RPE 6-7" },
+      { "week": 3, "zone2_min": 25, "sessions": 5, "steps": 5500, "rpe": "7", "strength": "small load bump, RPE 7" },
+      { "week": 4, "zone2_min": 25, "zone2_max": 30, "sessions": 5, "steps": 6000, "rpe": "7-8", "strength": "RPE 7-8 last set if joints are quiet" }
+    ],
+    "strength": {
+      "prescription": "2 sets, 8-12 reps, stop 2 reps short of failure",
+      "A": ["Leg press", "Seated cable row", "Machine chest press", "Romanian deadlift (2x8-10)", "Dead bug"],
+      "B": ["Goblet or hack squat", "Lat pulldown", "Shoulder press", "Seated leg curl", "Pallof press"],
+      "priority_note": "Legs lag on the last scan. Legs lead every block."
+    },
+    "recovery_overlay": {
+      "green": { "min": 67, "action": "Full session. Third set on the first lift, or zone 2 out to 30 min." },
+      "yellow": { "min": 34, "action": "Train. Hold the load, two sets. This is the normal day." },
+      "red": { "min": 0, "action": "No lifting. 20 min easy walk. Shift strength forward one day." }
+    }
+  },
+  "nutrition": {
+    "protein_g_min": 150,
+    "protein_g_target": 160,
+    "protein_g_max": 170,
+    "protein_per_meal_g": [30, 40],
+    "kcal_target": 1850,
+    "kcal_maintenance": 2350,
+    "kcal_floor": 1500,
+    "soluble_fibre_g": [10, 25],
+    "water_litres": 3,
+    "priority": "Saturated fat is the target, not refined carbs.",
+    "hard_constraints": [
+      "Example of a hard constraint: a gut condition that rules out legumes of any kind. This is the kind of line that makes standard advice wrong, so state it plainly.",
+      "Example: foods he will not eat, listed by name. Never suggest them.",
+      "Example: high caffeine sensitivity - not a habitual coffee drinker."
+    ],
+    "fibre_sources": ["oats", "barley", "chia", "ground flaxseed", "psyllium husk", "carrots", "sweet potato", "apples", "oranges", "bananas", "almonds"],
+    "minimise": ["ghee", "butter", "fatty cuts", "full-fat cheese", "cream", "fried food", "palm oil", "pastries", "biscuits", "canned juice", "sugary drinks"],
+    "counting_rules": [
+      "Example: count a whey+collagen scoop as its whey content only - collagen is an incomplete protein."
+    ],
+    "off_plan_meals_per_week": [1, 2],
+    "ceiling_note": "Full dietary and exercise compliance moves LDL 10-15%. Supportive, not sufficient. Never imply diet alone solves the lipid problem."
+  },
+  "supplements": [
+    { "name": "Vitamin D3 + K2", "dose": "5000 IU / 120 mcg", "timing_slot": "07:00", "status": "active", "notes": "With fat." },
+    { "name": "Psyllium husk", "dose": "0.5 tsp ramping to 1-2 tsp", "timing_slot": "16:30", "status": "pending", "notes": "Full glass of water. Must be 2 hours clear of every other supplement and medication." }
+  ],
+  "smoking": {
+    "status": "current_smoker",
+    "quit_date": "2026-02-01",
+    "note": "This outranks everything else in the file.",
+    "support": "Whatever cessation support is actually available locally - name the app or the phone number, not a generic suggestion.",
+    "weight_rule": "For the first four weeks after the quit date calories go to maintenance and the deficit pauses. Do not let the scale pull him back to cigarettes."
+  },
+  "whoop": {
+    "zones": { "z0": "<114", "z1": "114-137", "z2": "138-148", "z3": "149-159", "z4": "160-170", "z5": "171+" },
+    "baseline": { "resting_hr": 74, "sleep_hours": 7.69, "aerobic_min_per_day": 2 },
+    "device_caveat": "The optical sensor measures rate, not rhythm. A loose strap or a bent arm produces spurious readings, and strain and calories are derived from heart rate - so a bad trace makes both meaningless. Flag implausible spikes as suspect."
+  },
+  "labs": [
+    {
+      "drawn_on": "2026-01-01", "lab_name": "Example Lab", "accession": "", "fasting": false,
+      "results": [
+        { "marker": "ldl", "value": 3.0, "unit": "mmol/L" }
+      ]
+    }
+  ],
+  "body_scans": [
+    {
+      "scanned_on": "2026-01-01", "device": "InBody 270",
+      "weight_kg": 80, "body_fat_pct": 25, "body_fat_kg": 20, "skeletal_muscle_kg": 32,
+      "visceral_level": 9, "whr": 1.0, "bmi": 26, "score": 70,
+      "segmental": { "note": "free-form" }
+    }
+  ],
+  "targets": {
+    "goal_weight_kg": 70,
+    "goal_note": "Lose fat, hold muscle."
+  },
+  "open_items": [
+    { "title": "Example open medical item", "category": "labs", "due_on": null }
+  ],
+  "guardrails": [
+    "This system does not give medical advice. It tracks, reminds and coaches on training and nutrition. Anything touching diagnosis, medication, dosing or symptoms goes to the doctor.",
+    "Never suppress a concern to keep the tone positive.",
+    "Symptoms are not data points to optimise. Chest pain, breathlessness, fainting, palpitations -> tell him to seek care. Do not analyse.",
+    "No aggressive deficits. Never encourage skipping meals, extended fasting, or training through exhaustion.",
+    "Lab interpretation is directional, not diagnostic."
+  ],
+  "schedule": {
+    "morning_brief": "07:00",
+    "workout_ready": "17:00",
+    "fuel_check": "13:00",
+    "psyllium": "16:30",
+    "evening_sweep": "21:00",
+    "bedtime": "21:30",
+    "weekly_review": { "weekday": 7, "time": "20:00" }
+  }
+}
