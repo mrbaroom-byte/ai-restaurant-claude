@@ -9,12 +9,16 @@ import { missStreak, hitStreak, zeroAerobicRun, smokeFreeDays } from '../domain/
 import { trends } from '../domain/labs.js';
 import * as repo from '../repo/index.js';
 
-const WEEKDAY_AR = {
-  1: 'الاثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة', 6: 'السبت', 7: 'الأحد',
+const WEEKDAY = {
+  ar: { 1: 'الاثنين', 2: 'الثلاثاء', 3: 'الأربعاء', 4: 'الخميس', 5: 'الجمعة', 6: 'السبت', 7: 'الأحد' },
+  en: { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' },
 };
 
-export async function buildContext(userId, profile, { at = new Date(), date = null } = {}) {
+export async function buildContext(userId, profile, { at = new Date(), date = null, lang = null } = {}) {
   const tz = timezoneOf(profile);
+  // The date he reads should be in the language he is reading.
+  const active = lang ?? localeOf(profile).slice(0, 2);
+  const locale = active === 'en' ? 'en-GB' : 'ar-SA';
   const parts = localParts(at, tz);
   const today = date ?? parts.date;
 
@@ -58,10 +62,11 @@ export async function buildContext(userId, profile, { at = new Date(), date = nu
     date: today,
     time: parts.hhmm,
     timezone: tz,
-    locale: localeOf(profile),
+    locale,
+    lang: active,
     weekday: parts.weekday,
-    weekdayName: WEEKDAY_AR[parts.weekday] ?? parts.weekdayShort,
-    prettyDate: prettyDate(today, localeOf(profile), tz),
+    weekdayName: (WEEKDAY[active] ?? WEEKDAY.ar)[parts.weekday] ?? parts.weekdayShort,
+    prettyDate: prettyDate(today, locale, tz),
     week: plan.week,
     plan,
     targets,

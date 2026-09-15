@@ -6,6 +6,7 @@ import { planForDay } from '../src/domain/program.js';
 import { targetsFor, dayTotals } from '../src/domain/targets.js';
 import * as F from '../src/bot/format.js';
 import { parseLooseJson } from '../src/coach/client.js';
+import { BOT, HELP } from '../src/bot/strings.js';
 import fs from 'node:fs';
 
 // The real profile when it is present, the committed example otherwise, so the
@@ -13,6 +14,7 @@ import fs from 'node:fs';
 const PROFILE_PATH = process.env.TEST_PROFILE
   ?? (fs.existsSync('./config/profile.json') ? './config/profile.json' : './config/profile.example.json');
 const profile = loadProfile(PROFILE_PATH);
+const BLOCK_START = profile.training.block.start_date;
 
 test('the system prompt carries every hard guardrail', () => {
   const s = stableSystem(profile, '2026-09-15');
@@ -86,12 +88,32 @@ test('loose JSON survives code fences and surrounding prose', () => {
   assert.equal(parseLooseJson(''), null);
 });
 
-test('mixed Arabic and Latin runs are bidi-isolated so numbers do not reorder', () => {
-  const plan = planForDay('2026-09-14', profile, { recoveryPct: 50, sleepHours: 7.5 });
-  const line = F.sessionLine(plan);
+test('Arabic mixes Latin runs behind bidi isolates so numbers do not reorder', () => {
+  const plan = planForDay(BLOCK_START, profile, { recoveryPct: 50, sleepHours: 7.5 });
+  const line = F.sessionLine('ar', plan);
   assert.ok(line.includes('⁦') && line.includes('⁩'), 'no isolate marks in the session line');
   // The isolated run must contain the whole Latin phrase, not part of it.
   const runs = [...line.matchAll(/⁦([^⁩]*)⁩/g)].map((m) => m[1]);
   assert.ok(runs.includes('110-125 bpm'));
   assert.ok(runs.includes('Zone 2'));
+});
+
+test('English carries no isolate marks - they would be noise in the transcript', () => {
+  const plan = planForDay(BLOCK_START, profile, { recoveryPct: 50, sleepHours: 7.5 });
+  const line = F.sessionLine('en', plan);
+  assert.ok(!line.includes('⁦') && !line.includes('⁩'));
+  assert.match(line, /Zone 2 20 min @ 110-125 bpm/);
+});
+
+test('every deterministic bot string exists in both languages', () => {
+  const ar = Object.keys(BOT.ar);
+  const en = Object.keys(BOT.en);
+  assert.deepEqual(ar.filter((k) => !en.includes(k)), [], 'missing English strings');
+  assert.deepEqual(en.filter((k) => !ar.includes(k)), [], 'missing Arabic strings');
+  for (const l of ['ar', 'en']) assert.ok(HELP[l] && HELP[l].length > 100, 'no help text for ' + l);
+});
+
+test('the coach is told which language to write in', () => {
+  assert.match(stableSystem(profile, '2026-09-15', 'ar'), /Write to him in Arabic/);
+  assert.match(stableSystem(profile, '2026-09-15', 'en'), /Write to him in English/);
 });

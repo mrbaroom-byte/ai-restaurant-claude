@@ -12,6 +12,20 @@ const REQUIRED = ['user', 'training', 'nutrition', 'smoking', 'guardrails'];
  */
 export function loadProfile(profilePath = process.env.PROFILE_PATH || './config/profile.json') {
   if (cached && cached.__path === profilePath) return cached;
+
+  // On a hosted deployment there is no file to mount and the profile must not
+  // be committed, so it arrives as an environment variable instead. Base64 is
+  // the usual form because dashboards mangle multi-line JSON.
+  const inline = process.env.PROFILE_B64
+    ? Buffer.from(process.env.PROFILE_B64, 'base64').toString('utf8')
+    : process.env.PROFILE_JSON || null;
+  if (inline) {
+    const fromEnv = validate(JSON.parse(inline));
+    fromEnv.__path = profilePath;
+    cached = fromEnv;
+    return fromEnv;
+  }
+
   const abs = path.resolve(profilePath);
   if (!fs.existsSync(abs)) {
     throw new Error(
@@ -20,11 +34,15 @@ export function loadProfile(profilePath = process.env.PROFILE_PATH || './config/
       `That file is gitignored on purpose.`
     );
   }
-  const profile = JSON.parse(fs.readFileSync(abs, 'utf8'));
-  const missing = REQUIRED.filter((k) => !profile[k]);
-  if (missing.length) throw new Error(`Profile is missing required sections: ${missing.join(', ')}`);
+  const profile = validate(JSON.parse(fs.readFileSync(abs, 'utf8')));
   profile.__path = profilePath;
   cached = profile;
+  return profile;
+}
+
+function validate(profile) {
+  const missing = REQUIRED.filter((k) => !profile[k]);
+  if (missing.length) throw new Error(`Profile is missing required sections: ${missing.join(', ')}`);
   return profile;
 }
 

@@ -11,15 +11,15 @@ const MAX_TOKENS = 1200; // a nudge, not an essay
  * breakpoint; the volatile state block goes after it so a changed number does
  * not invalidate the 3k-token profile in front of it.
  */
-export function systemBlocks(profile, ctx) {
+export function systemBlocks(profile, ctx, lang = 'ar') {
   return [
-    { type: 'text', text: stableSystem(profile, ctx.date), cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: stableSystem(profile, ctx.date, lang), cache_control: { type: 'ephemeral' } },
     { type: 'text', text: stateSystem(ctx) },
   ];
 }
 
 /** Answer a free-text message from him. */
-export async function reply(profile, ctx, userText, { history = [] } = {}) {
+export async function reply(profile, ctx, userText, { history = [], lang = 'ar' } = {}) {
   const messages = [
     ...history.map((m) => ({ role: m.direction === 'in' ? 'user' : 'assistant', content: m.body })),
     { role: 'user', content: userText },
@@ -27,7 +27,7 @@ export async function reply(profile, ctx, userText, { history = [] } = {}) {
   const res = await safeCreate({
     model: model(),
     max_tokens: MAX_TOKENS,
-    system: systemBlocks(profile, ctx),
+    system: systemBlocks(profile, ctx, lang),
     messages: collapse(messages),
   });
   if (!res.ok) return { ok: false, text: `⚠️ ${res.error}` };
@@ -38,11 +38,11 @@ export async function reply(profile, ctx, userText, { history = [] } = {}) {
  * Generate one of the scheduled messages. `instruction` says what this
  * particular message is for; the context block supplies the facts.
  */
-export async function generate(profile, ctx, instruction, { maxTokens = MAX_TOKENS, thinking = false } = {}) {
+export async function generate(profile, ctx, instruction, { maxTokens = MAX_TOKENS, thinking = false, lang = 'ar' } = {}) {
   const params = {
     model: model(),
     max_tokens: maxTokens,
-    system: systemBlocks(profile, ctx),
+    system: systemBlocks(profile, ctx, lang),
     messages: [{ role: 'user', content: instruction }],
   };
   // The brief and the weekly review synthesise several signals; the quick

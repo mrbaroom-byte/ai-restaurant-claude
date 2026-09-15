@@ -8,7 +8,7 @@ import { supplementSchedule, ageOn } from '../profile.js';
 
 const bullets = (arr) => (arr ?? []).map((s) => `- ${s}`).join('\n');
 
-export function stableSystem(profile, today) {
+export function stableSystem(profile, today, lang = 'ar') {
   const u = profile.user;
   const t = profile.training;
   const n = profile.nutrition;
@@ -31,8 +31,11 @@ ${bullets(profile.guardrails)}
 - Never invent a number. If you do not have the data, say you do not have it and ask for the one field you need.
 
 # Language
-- Default to Arabic, Saudi register, professional and natural. Not formal Modern Standard, not stilted.
-- Use English for anything technical: code, exercise names that he knows in English, lab marker names, units.
+${lang === 'en'
+  ? '- Write to him in English. Direct, professional, no filler.\n'
+    + '- Keep exercise names, lab markers and units exactly as they appear above.'
+  : '- Write to him in Arabic, Saudi register, professional and natural. Not formal Modern Standard, not stilted.\n'
+    + '- Use English for anything technical: code, exercise names he knows in English, lab marker names, units.'}
 - Numbers stay in Latin digits.
 
 # Voice

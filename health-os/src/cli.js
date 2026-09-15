@@ -17,6 +17,7 @@ import { localDate } from './lib/time.js';
 import * as repo from './repo/index.js';
 import * as P from './bot/parse.js';
 import * as F from './bot/format.js';
+import { resolveLang } from './bot/lang.js';
 import { buildContext } from './coach/context.js';
 import { composeBrief, composeWeekly, fallbackFocus } from './scheduler/jobs.js';
 import { tick } from './scheduler/index.js';
@@ -33,16 +34,17 @@ async function main() {
   const today = localDate(new Date(), tz);
   const user = await repo.users.upsertFromProfile(profile);
   const uid = user.id;
+  const lang = process.env.HOS_LANG || await resolveLang(uid, profile);
 
   switch (cmd) {
     case 'day': {
       const date = /^\d{4}-\d{2}-\d{2}$/.test(arg) ? arg : today;
       const ctx = await buildContext(uid, profile, { date });
       console.log(`${ctx.prettyDate}  (week ${ctx.week || '-'} of 4)`);
-      console.log(F.recoveryLine(ctx.plan));
-      console.log(`session: ${F.sessionLine(ctx.plan)}`);
+      console.log(F.recoveryLine(lang, ctx.plan));
+      console.log(`session: ${F.sessionLine(lang, ctx.plan)}`);
       if (F.exerciseList(ctx.plan)) console.log(F.exerciseList(ctx.plan));
-      console.log(F.macroLine(ctx.totals, ctx.targets));
+      console.log(F.macroLine(lang, ctx.totals, ctx.targets));
       if (ctx.targets.deficitPaused) console.log(`! ${ctx.targets.reason}`);
       console.log(`workouts today: ${ctx.workoutsToday.length}, meals: ${ctx.totals.meals}`);
       console.log(`streak: hit ${ctx.hitStreak}, missed ${ctx.streak.misses}, zero-aerobic run ${ctx.zeroAerobicRun}`);
@@ -71,7 +73,7 @@ async function main() {
         protein_g_est: e.protein_g_est, fibre_g_est: e.fibre_g_est,
         sat_fat_flag: e.sat_fat_flag, source: 'text', confidence: e.confidence,
       });
-      console.log(F.estimateCard(e));
+      console.log(F.estimateCard(lang, e));
       break;
     }
 
@@ -102,19 +104,19 @@ async function main() {
       break;
     }
 
-    case 'brief':   console.log(await composeBrief(uid, profile, today)); break;
-    case 'week':    console.log(await composeWeekly(uid, profile, today)); break;
+    case 'brief':   console.log(await composeBrief(uid, profile, today, lang)); break;
+    case 'week':    console.log(await composeWeekly(uid, profile, today, lang)); break;
 
     case 'focus': {
       // The deterministic fallback, so it can be checked without spending a call.
       const ctx = await buildContext(uid, profile, { date: today });
-      console.log(fallbackFocus(ctx));
+      console.log(fallbackFocus(ctx, lang));
       break;
     }
 
     case 'trends': {
       const ctx = await buildContext(uid, profile, { date: today });
-      for (const t of ctx.labTrends) console.log(F.labLine(t));
+      for (const x of ctx.labTrends) console.log(F.labLine(lang, x));
       break;
     }
 
@@ -124,7 +126,7 @@ async function main() {
       break;
     }
 
-    case 'dashboard': process.stdout.write(await renderDashboard(uid, profile, today)); break;
+    case 'dashboard': process.stdout.write(await renderDashboard(uid, profile, today, { lang })); break;
 
     default:
       console.log(`usage: node src/cli.js <day|log|meal|labs|scan|smoke|brief|week|focus|trends|tick|dashboard> [args]`);

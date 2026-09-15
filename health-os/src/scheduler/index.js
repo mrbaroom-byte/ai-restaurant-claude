@@ -11,6 +11,7 @@ import { timezoneOf } from '../profile.js';
 import { buildContext } from '../coach/context.js';
 import * as repo from '../repo/index.js';
 import { JOBS, runTriggers } from './jobs.js';
+import { resolveLang } from '../bot/lang.js';
 import * as tg from '../channels/telegram.js';
 
 const TICK_MS = 60_000;
@@ -41,6 +42,7 @@ export async function tick({ userId, profile, at = new Date() }) {
   const nowMin = minutesOfDay(parts.hhmm);
   const date = parts.date;
   const fired = [];
+  const lang = await resolveLang(userId, profile);
 
   for (const job of JOBS) {
     const slot = job.at(profile);
@@ -54,7 +56,7 @@ export async function tick({ userId, profile, at = new Date() }) {
     if (!(await repo.jobRuns.claim(userId, job.key, date))) continue;
 
     try {
-      const skipped = await job.run(userId, profile, date);
+      const skipped = await job.run(userId, profile, date, lang);
       await repo.jobRuns.finish(userId, job.key, date, skipped ? 'skipped' : 'ok', skipped ?? null);
       fired.push({ job: job.key, skipped: skipped ?? false });
     } catch (e) {
@@ -74,7 +76,7 @@ export async function tick({ userId, profile, at = new Date() }) {
   try {
     const ctx = await buildContext(userId, profile, { at, date });
     const claim = (key) => repo.jobRuns.claim(userId, key, date);
-    const t = await runTriggers(userId, profile, ctx, claim);
+    const t = await runTriggers(userId, profile, ctx, claim, lang);
     for (const key of t) fired.push({ trigger: key });
   } catch (e) {
     console.error('[scheduler] triggers failed:', e.message);

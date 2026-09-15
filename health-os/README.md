@@ -37,10 +37,52 @@ stop and fix `.gitignore` before committing anything.
 | **Notifies** | Morning brief, pre-session prompt, midday fuel check, psyllium reminder, evening sweep, bedtime, Sunday weekly review |
 | **Logs** | Meals (photo or text), workouts, weight, morning metrics, supplements, smoking, labs, body scans |
 | **Tracks** | 90-day trends, lab history in both the reported unit and mg/dL, streaks |
-| **Coaches** | Conversational, Arabic by default, full context, guardrailed |
+| **Coaches** | Conversational, full context, guardrailed |
+| **Scores** | XP per day, seven levels, fourteen achievements — all recomputed from the log, never stored |
+| **Speaks** | Arabic and English throughout, switchable from the bot (`/lang`) or the dashboard |
+| **Themes** | Light and dark, following the device by default |
 
 Reply to any message to log something. Send a photo of a plate and it comes back
 with an estimate you can correct.
+
+## Gamification, and what it deliberately does not reward
+
+His failure mode is programme decay, not lack of effort, so points are paid for
+**doing what the day prescribed** — which on a red-recovery day means walking or
+resting. Lifting through a red day earns nothing for the session; backing off
+earns `rest_respected`, and there is an achievement for it.
+
+Nothing rewards a deeper deficit, a lower weight, a skipped meal or a longer
+fast. Those would put the scoreboard in direct conflict with the guardrails, and
+the guardrails win. Nothing ever subtracts either: a bad day scores zero.
+
+| | |
+|---|---|
+| Daily XP | morning numbers 10 · session 30 · respected rest 20 · protein 20 · meals logged 10 · 7 h sleep 10 · supplements 10 · smoke-free 25 |
+| Levels | seven, 0 → 7,000 XP, each with a name in both languages |
+| Achievements | fourteen, evaluated as pure predicates over the history — correct the log and the badge corrects itself |
+
+`/stats` in the bot shows the level, what was earned today and what is still
+available. The dashboard shows the same thing as a ring, chips and a badge grid.
+
+## Language and theme
+
+Both surfaces are bilingual.
+
+- **Bot**: `/lang` toggles, `/lang en` sets explicitly. The preference is stored
+  per user and drives the deterministic copy *and* the language the coach is
+  told to write in.
+- **Dashboard**: a header toggle, no round trip. The server sends a
+  language-neutral payload — keys, numbers and dates, never a rendered sentence —
+  and the browser holds both string tables, so there is only ever one copy of
+  the data. `?lang=en&theme=dark` pins a view for a shareable link.
+- **Theme**: light and dark, following the device by default and overridable.
+  Dark is a selected set of steps validated against the dark surface, not an
+  inversion of the light one.
+
+Mixed Arabic/Latin runs are wrapped in Unicode bidi isolates. Without them
+`1 / 6` renders as `6 / 1` and heart-rate ranges reverse — in Telegram and in
+HTML alike, which is why the fix is a character and not a `<span dir="ltr">`.
 
 ---
 
@@ -110,6 +152,15 @@ $EDITOR config/profile.json
 npm run seed             # loads profile data into the database, idempotent
 ```
 
+On a hosted deployment there is no file to mount and the profile must not be
+committed, so pass it as an environment variable instead — `PROFILE_B64`
+(base64, which survives dashboard paste boxes) or `PROFILE_JSON`. An inline
+value wins over `PROFILE_PATH`.
+
+```bash
+base64 -w0 config/profile.json     # paste the result into PROFILE_B64
+```
+
 The seed also writes the WHOOP monthly averages as dated baseline rows so the
 trend charts are not empty on day one.
 
@@ -154,8 +205,10 @@ Migrations run on boot unless `RUN_MIGRATIONS=false`.
 | `/labs <…>` | Enter bloodwork; converts units and recomputes trends |
 | `/rescan <…>` | Enter a new InBody |
 | `/quit <…>` | Smoke-free counter, craving and trigger logging |
+| `/stats` | Level, XP earned today, what is still available, achievements |
 | `/supps` | Tick supplements off |
 | `/dash` | Link to the dashboard |
+| `/lang` | Switch between Arabic and English |
 
 Anything else goes to the coach.
 
@@ -189,8 +242,32 @@ node src/cli.js dashboard > /tmp/d.html
 
 ### Dashboard
 
-`GET /dashboard?token=$DASHBOARD_TOKEN` — one self-contained HTML response,
+`GET /dashboard?token=$DASHBOARD_TOKEN` — one self-contained response,
 mobile-first, inline SVG charts, no external requests except the font stylesheet.
+Add `&lang=en` or `&theme=dark` to pin a view.
+
+Charts carry a hover crosshair and tooltip, arrow-key navigation from the
+keyboard, a per-chart table view for screen readers, and an `aria-label` that
+summarises the series. Colour is never the only channel: every recovery state
+ships a distinct glyph and the readiness word beside it, because a red/green
+status pair cannot be made colourblind-safe by choosing better hues — the
+palette checker in the `dataviz` skill says so, and the relief it prescribes is
+secondary encoding.
+
+Palette steps were picked against the surface they sit on and run through that
+checker for lightness band, chroma floor, CVD separation and contrast. The
+limestone / ink / teal / oxide identity is carried over from the four existing
+artifacts rather than re-invented.
+
+### As a standalone page
+
+```bash
+node scripts/build-artifact.js > health-os.html
+```
+
+Produces the same app as a single file shaped to the Claude artifact contract —
+no document wrapper, three-state theming, a payload snapshot taken at build
+time. Useful for sharing a read-only view without exposing the service.
 
 ---
 
@@ -266,7 +343,7 @@ more than a complete system that is never finished.
 | 3 — Scheduler, morning brief | done (`src/scheduler/`) |
 | 4 — AI coach with full context | done (`src/coach/`) |
 | 5 — Remaining notifications and event triggers | done (`src/scheduler/jobs.js`) |
-| 6 — Dashboard | done (`src/dashboard/`) |
+| 6 — Dashboard | done (`src/dashboard/`) — bilingual, themed, gamified |
 | 7 — WHOOP integration | **not done** — recovery, sleep and resting HR are entered manually each morning via `log recovery …`. The monthly averages from the exported reports are seeded as baseline rows. Wire the WHOOP API into `repo.dailyLogs.record()` when the endpoints are available; nothing else needs to change. |
 
 ---

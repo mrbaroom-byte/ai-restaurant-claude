@@ -11,62 +11,90 @@ import * as tg from '../channels/telegram.js';
 import { sendEmail, emailEnabled } from '../channels/email.js';
 import * as repo from '../repo/index.js';
 import * as F from '../bot/format.js';
+import { L } from '../bot/strings.js';
+import { todayScore } from '../bot/lang.js';
 import { addDays, weekStart, daysBetween, minutesOfDay } from '../lib/time.js';
 import { weeklyAerobicTarget } from '../domain/program.js';
 import { proteinFix } from '../domain/targets.js';
 
 /* ------------------------------------------------------------ the brief --- */
 
-export async function composeBrief(userId, profile, date) {
-  const ctx = await buildContext(userId, profile, { date });
+export async function composeBrief(userId, profile, date, lang = 'ar') {
+  const t = L(lang);
+  const ctx = await buildContext(userId, profile, { date, lang });
+  const game = await todayScore(userId, profile, date).catch(() => null);
+
   const facts = [
-    `☀️ ${ctx.prettyDate} — أسبوع ${ctx.week || '—'} من 4`,
-    F.recoveryLine(ctx.plan),
-    ctx.daily?.sleep_hours != null ? `نوم ${F.num(ctx.daily.sleep_hours, 1)} ساعة${ctx.daily.resting_hr ? ` · نبض الراحة ${ctx.daily.resting_hr}` : ''}` : '',
+    `☀️ ${ctx.prettyDate} — ${t('weekOf', { a: ctx.week || '—', b: 4 })}`,
+    F.recoveryLine(lang, ctx.plan),
+    ctx.daily?.sleep_hours != null
+      ? `${t('sleepLine', { h: F.num(ctx.daily.sleep_hours, 1) })}${ctx.daily.resting_hr ? ` · ${t('restingHr')} ${ctx.daily.resting_hr}` : ''}`
+      : '',
     '',
-    `الجلسة: ${F.sessionLine(ctx.plan)}`,
+    `${t('session')}: ${F.sessionLine(lang, ctx.plan)}`,
     F.exerciseList(ctx.plan),
-    ctx.plan.stepsTarget ? `الخطوات: ${ctx.plan.stepsTarget}` : '',
+    ctx.plan.stepsTarget ? `${t('steps')}: ${ctx.plan.stepsTarget}` : '',
     '',
-    `المكمّلات: ${ctx.supplementSchedule.filter((s) => s.slot !== 'as-needed').map(({ slot, items }) => `${slot} ${items.map((i) => i.name).join('، ')}`).join(' | ')}`,
-    ctx.smokeFree?.beforeQuit ? `🚭 ${ctx.smokeFree.daysToQuit} يوم لتاريخ الإقلاع.` : '',
-    ctx.smokeFree && !ctx.smokeFree.beforeQuit ? `🚭 ${ctx.smokeFree.clean} يوم بدون تدخين.` : '',
+    `${t('supplements')}: ${ctx.supplementSchedule.filter((s) => s.slot !== 'as-needed')
+      .map(({ slot, items }) => `${slot} ${items.map((i) => i.name).join(F.listSep(lang))}`).join(' | ')}`,
+    ctx.smokeFree?.beforeQuit ? `🚭 ${t('daysToQuit', { n: ctx.smokeFree.daysToQuit })}` : '',
+    ctx.smokeFree && !ctx.smokeFree.beforeQuit ? `🚭 ${t('smokeFree', { n: ctx.smokeFree.clean })}` : '',
+    game ? `⚡ ${t('xpLine', { lvl: game.level.level, xp: game.total, today: game.today?.xp ?? 0 })}` : '',
   ].filter((l) => l !== '' && l != null).join('\n');
 
-  const focus = await oneFocus(profile, ctx);
+  const focus = await oneFocus(profile, ctx, lang);
   return `${facts}\n\n🎯 ${focus}`;
 }
 
 /** The single thing that matters today. AI-written; falls back to a rule. */
-async function oneFocus(profile, ctx) {
-  const res = await chat.generate(
-    profile,
-    ctx,
-    'اكتب سطر واحد فقط: "التركيز" لليوم. جملة واحدة قصيرة، فعل واحد قابل للتنفيذ، بالعربي. '
-    + 'بدون مقدمة وبدون قائمة وبدون تكرار الأرقام اللي فوق. '
-    + 'إذا فات يومين تمرين اذكرها بصراحة وأعطه أصغر طريقة للرجوع اليوم.',
-    { maxTokens: 220, thinking: true },
-  );
+async function oneFocus(profile, ctx, lang) {
+  const instruction = lang === 'en'
+    ? 'Write one line only: the focus for today. One short sentence, one actionable verb. '
+      + 'No preamble, no list, and do not repeat the numbers above. '
+      + 'If two sessions have been missed, say so plainly and give the smallest way back in today.'
+    : 'اكتب سطر واحد فقط: "التركيز" لليوم. جملة واحدة قصيرة، فعل واحد قابل للتنفيذ، بالعربي. '
+      + 'بدون مقدمة وبدون قائمة وبدون تكرار الأرقام اللي فوق. '
+      + 'إذا فات يومين تمرين اذكرها بصراحة وأعطه أصغر طريقة للرجوع اليوم.';
+  const res = await chat.generate(profile, ctx, instruction, { maxTokens: 220, thinking: true, lang });
   if (res.ok && res.text && !res.text.startsWith('⚠️')) return res.text.split('\n')[0].trim();
-  return fallbackFocus(ctx);
+  return fallbackFocus(ctx, lang);
 }
 
-export function fallbackFocus(ctx) {
-  if (ctx.streak?.broken) return 'فاتتك جلستان. القاعدة: لا تفوّت مرتين. اليوم ولو 10 دقائق Zone 2 — المهم تكسر السلسلة.';
-  if (ctx.plan?.recovery?.effectiveBand === 'red') return 'التعافي أحمر. لا حديد اليوم — 20 دقيقة مشي هادئ وبس.';
-  if (ctx.plan?.recovery?.pct == null) return 'سجّل أرقام الصباح أول شي: log recovery __ sleep __ rhr __';
-  if (ctx.streak?.atRisk) return 'فاتت جلسة أمس. اليوم غير قابل للتفاوض.';
-  if (ctx.totals?.proteinGap > 60) return 'ابدأ اليوم ببروتين: 30-40 جم في أول وجبة.';
-  if (ctx.smokeFree?.beforeQuit && ctx.smokeFree.daysToQuit <= 7) return 'الإقلاع قرب. جهّز اليوم خطوة وحدة من قائمة التحضير.';
-  return `نفّذ جلسة اليوم: ${F.sessionLine(ctx.plan)}`;
+export function fallbackFocus(ctx, lang = 'ar') {
+  const ar = lang !== 'en';
+  if (ctx.streak?.broken) {
+    return ar ? 'فاتتك جلستان. القاعدة: لا تفوّت مرتين. اليوم ولو 10 دقائق Zone 2 — المهم تكسر السلسلة.'
+              : 'Two sessions missed. The rule is never miss twice. Ten minutes of Zone 2 today is enough to break it.';
+  }
+  if (ctx.plan?.recovery?.effectiveBand === 'red') {
+    return ar ? 'التعافي أحمر. لا حديد اليوم — 20 دقيقة مشي هادئ وبس.'
+              : 'Recovery is red. No lifting today — a 20 minute easy walk and nothing more.';
+  }
+  if (ctx.plan?.recovery?.pct == null) {
+    return ar ? 'سجّل أرقام الصباح أول شي: log recovery __ sleep __ rhr __'
+              : 'Log the morning numbers first: log recovery __ sleep __ rhr __';
+  }
+  if (ctx.streak?.atRisk) {
+    return ar ? 'فاتت جلسة أمس. اليوم غير قابل للتفاوض.' : 'Yesterday was missed. Today is not negotiable.';
+  }
+  if (ctx.totals?.proteinGap > 60) {
+    return ar ? 'ابدأ اليوم ببروتين: 30-40 جم في أول وجبة.' : 'Start with protein: 30-40 g in the first meal.';
+  }
+  if (ctx.smokeFree?.beforeQuit && ctx.smokeFree.daysToQuit <= 7) {
+    return ar ? 'الإقلاع قرب. جهّز اليوم خطوة وحدة من قائمة التحضير.'
+              : 'The quit date is close. Do one prep step today.';
+  }
+  return `${ar ? 'نفّذ جلسة اليوم' : "Do today's session"}: ${F.sessionLine(lang, ctx.plan)}`;
 }
 
 /* ---------------------------------------------------------- weekly review --- */
 
-export async function composeWeekly(userId, profile, date) {
+export async function composeWeekly(userId, profile, date, lang = 'ar') {
+  const t = L(lang);
   const start = weekStart(date);
   const end = addDays(start, 6);
-  const ctx = await buildContext(userId, profile, { date });
+  const ctx = await buildContext(userId, profile, { date, lang });
+  const game = await todayScore(userId, profile, date).catch(() => null);
 
   const [workoutRows, mealRows, dailyRows] = await Promise.all([
     repo.workouts.between(userId, start, end),
@@ -91,30 +119,42 @@ export async function composeWeekly(userId, profile, date) {
   const rhrs = dailyRows.filter((d) => d.resting_hr != null).map((d) => d.resting_hr);
   const sleeps = dailyRows.filter((d) => d.sleep_hours != null).map((d) => Number(d.sleep_hours));
 
+  const weekXp = game
+    ? (game.perDay ?? []).filter((d) => d.date >= start && d.date <= end).reduce((a, d) => a + d.xp, 0)
+    : null;
+
   const facts = [
-    `📊 مراجعة الأسبوع ${start} → ${end}`,
-    `الجلسات: ${sessionDays} من 7`,
-    `دقائق Zone 2: ${aerobic} من ${aerobicTarget}`,
-    avgProtein != null ? `متوسط البروتين: ${avgProtein} جم/يوم (الهدف ${ctx.targets.protein_g})` : 'متوسط البروتين: ما في وجبات مسجّلة كافية',
-    `أيام سُجّل فيها أكل: ${daysWithMeals.size} من 7`,
-    weightChange != null ? `الوزن: ${weightChange > 0 ? '+' : ''}${weightChange} كجم` : '',
-    rhrs.length ? `متوسط نبض الراحة: ${Math.round(avg(rhrs))}` : '',
-    sleeps.length ? `متوسط النوم: ${(avg(sleeps)).toFixed(1)} ساعة` : '',
-    ctx.smokeFree && !ctx.smokeFree.beforeQuit ? `🚭 ${ctx.smokeFree.clean} يوم بدون تدخين` : '',
+    `📊 ${t('weeklyTitle', { a: start, b: end })}`,
+    t('weeklySessions', { a: sessionDays }),
+    t('weeklyAerobic', { a: aerobic, b: aerobicTarget }),
+    avgProtein != null
+      ? t('weeklyProtein', { a: avgProtein, b: ctx.targets.protein_g })
+      : t('weeklyNoMeals'),
+    t('weeklyLoggedDays', { a: daysWithMeals.size }),
+    weightChange != null ? t('weeklyWeight', { a: `${weightChange > 0 ? '+' : ''}${weightChange}` }) : '',
+    rhrs.length ? t('weeklyRhr', { a: Math.round(avg(rhrs)) }) : '',
+    sleeps.length ? t('weeklySleep', { a: avg(sleeps).toFixed(1) }) : '',
+    ctx.smokeFree && !ctx.smokeFree.beforeQuit ? `🚭 ${t('smokeFree', { n: ctx.smokeFree.clean })}` : '',
+    weekXp != null ? `⚡ ${t('weeklyXp', { a: weekXp })}` : '',
   ].filter(Boolean).join('\n');
 
-  const res = await chat.generate(
-    profile, ctx,
-    `هذي أرقام الأسبوع:\n${facts}\n\n`
-    + 'اكتب فقرتين قصيرتين بالعربي: (1) حكم صريح على الأسبوع — إذا كان سيئاً قلها بوضوح بدون مجاملة، '
-    + '(2) تغيير واحد فقط للأسبوع الجاي. لا تكرر الأرقام.',
-    { maxTokens: 500, thinking: true },
-  );
+  const instruction = lang === 'en'
+    ? `These are the week's numbers:\n${facts}\n\n`
+      + 'Write two short paragraphs: (1) a plain verdict on the week — if it was bad, say so without flattery, '
+      + '(2) exactly one change for next week. Do not repeat the numbers.'
+    : `هذي أرقام الأسبوع:\n${facts}\n\n`
+      + 'اكتب فقرتين قصيرتين بالعربي: (1) حكم صريح على الأسبوع — إذا كان سيئاً قلها بوضوح بدون مجاملة، '
+      + '(2) تغيير واحد فقط للأسبوع الجاي. لا تكرر الأرقام.';
 
-  const verdict = res.ok && !res.text.startsWith('⚠️')
-    ? res.text
-    : (sessionDays >= 5 ? 'أسبوع منفّذ. كمّل بنفس الحجم.' : `${sessionDays} جلسات من 7. الأسبوع الجاي: ثبّت يومين غير قابلين للتفاوض.`);
+  const res = await chat.generate(profile, ctx, instruction, { maxTokens: 500, thinking: true, lang });
 
+  const fallback = sessionDays >= 5
+    ? (lang === 'en' ? 'A week that was actually executed. Keep the same size.' : 'أسبوع منفّذ. كمّل بنفس الحجم.')
+    : (lang === 'en'
+      ? `${sessionDays} sessions of 7. Next week: fix two non-negotiable days.`
+      : `${sessionDays} جلسات من 7. الأسبوع الجاي: ثبّت يومين غير قابلين للتفاوض.`);
+
+  const verdict = res.ok && !res.text.startsWith('⚠️') ? res.text : fallback;
   return `${facts}\n\n${verdict}`;
 }
 
@@ -131,28 +171,31 @@ export const JOBS = [
   {
     key: 'morning_brief',
     at: (p) => p.schedule?.morning_brief ?? '07:00',
-    async run(userId, profile, date) {
-      await send(userId, 'brief', await composeBrief(userId, profile, date));
+    async run(userId, profile, date, lang) {
+      await send(userId, 'brief', await composeBrief(userId, profile, date, lang));
     },
   },
   {
     key: 'workout_ready',
     at: (p) => p.schedule?.workout_ready ?? '17:00',
-    async run(userId, profile, date) {
-      const ctx = await buildContext(userId, profile, { date });
+    async run(userId, profile, date, lang) {
+      const t = L(lang);
+      const ctx = await buildContext(userId, profile, { date, lang });
       if (!ctx.plan.isTrainingDay) return 'rest day';
       if (ctx.workoutsToday.some((w) => w.completed)) return 'already trained';
+      const z = ctx.plan.adjusted.zone2;
       const lines = [
-        `${ctx.plan.adjusted.isLiftDay ? '🏋️' : '🚶'} جلسة اليوم: ${F.sessionLine(ctx.plan)}`,
+        `${ctx.plan.adjusted.isLiftDay ? '🏋️' : '🚶'} ${t('sessionToday')}: ${F.sessionLine(lang, ctx.plan)}`,
         F.exerciseList(ctx.plan),
         ctx.plan.strengthPrescription && ctx.plan.adjusted.isLiftDay ? `\n${ctx.plan.strengthPrescription}` : '',
-        ctx.plan.adjusted.sets ? ctx.plan.adjusted.sets : '',
-        ctx.plan.adjusted.zone2 ? `Zone 2 = ${ctx.plan.adjusted.zone2.hrLow}-${ctx.plan.adjusted.zone2.hrHigh} bpm. تقدر تتكلم بالتلفون طوال الجلسة.` : '',
+        ctx.plan.adjusted.sets ?? '',
+        z ? t('zone2Cue', { lo: z.hrLow, hi: z.hrHigh }) : '',
       ].filter(Boolean).join('\n');
       await tg.sendMessage(lines, {
-        keyboard: [[
-          { text: '✅ خلّصت', callback_data: `done:${ctx.plan.adjusted.isLiftDay ? 'strength' : 'zone2'}` },
-        ]],
+        keyboard: [[{
+          text: `✅ ${t('doneBtn')}`,
+          callback_data: `done:${ctx.plan.adjusted.isLiftDay ? 'strength' : 'zone2'}`,
+        }]],
       });
       await repo.messages.add(userId, { direction: 'out', kind: 'nudge', body: lines });
     },
@@ -160,54 +203,52 @@ export const JOBS = [
   {
     key: 'fuel_check',
     at: (p) => p.schedule?.fuel_check ?? '13:00',
-    async run(userId, profile, date) {
-      const ctx = await buildContext(userId, profile, { date });
+    async run(userId, profile, date, lang) {
+      const t = L(lang);
+      const ctx = await buildContext(userId, profile, { date, lang });
       const gap = ctx.totals.proteinGap;
-      const head = `🍽️ البروتين إلى الآن: ${F.num(ctx.totals.protein)} من ${ctx.targets.protein_g} جم.`;
-      if (!ctx.totals.meals) return send(userId, 'nudge', `${head}\nما سجّلت أي وجبة. أرسل صورة الغداء أو اكتبها.`);
+      const head = `🍽️ ${t('proteinSoFar', { a: F.num(ctx.totals.protein), b: ctx.targets.protein_g })}`;
+      if (!ctx.totals.meals) return send(userId, 'nudge', `${head}\n${t('noMealsYet')}`);
       if (gap <= 0) return send(userId, 'nudge', `${head} ✅`);
       const fix = proteinFix(gap);
-      return send(userId, 'nudge', `${head}\nناقصك ${F.num(gap)} جم. أقرب حل: ${fix.text}.`);
+      return send(userId, 'nudge',
+        `${head}\n${t('proteinShort', { n: F.num(gap) })} ${t('nearestFix')}: ${lang === 'en' ? fix.en : fix.text}.`);
     },
   },
   {
     key: 'psyllium',
     at: (p) => p.schedule?.psyllium ?? '16:30',
-    async run(userId, profile, date) {
-      const ctx = await buildContext(userId, profile, { date });
+    async run(userId, profile, date, lang) {
+      const t = L(lang);
+      const ctx = await buildContext(userId, profile, { date, lang });
       const psy = ctx.supplements.find((s) => /psyllium/i.test(s.name));
       if (!psy) return 'no psyllium in the profile';
       if (psy.status === 'pending') return 'psyllium has not arrived yet';
-      await tg.sendMessage(
-        `🥄 وقت السيليوم — ${psy.dose}، مع كوب ماء كامل.\nلحاله: ساعتين قبل وبعد أي مكمّل أو دواء.`,
-        { keyboard: [[{ text: '✅ أخذته', callback_data: `supp:${psy.id}` }]] },
-      );
+      await tg.sendMessage(`🥄 ${t('psylliumTime', { dose: psy.dose })}\n${t('psylliumAlone')}`,
+        { keyboard: [[{ text: `✅ ${t('tookIt')}`, callback_data: `supp:${psy.id}` }]] });
       await repo.messages.add(userId, { direction: 'out', kind: 'nudge', body: 'psyllium reminder' });
     },
   },
   {
     key: 'evening_sweep',
     at: (p) => p.schedule?.evening_sweep ?? '21:00',
-    async run(userId, profile, date) {
-      const ctx = await buildContext(userId, profile, { date });
+    async run(userId, profile, date, lang) {
+      const t = L(lang);
+      const ctx = await buildContext(userId, profile, { date, lang });
       if (!ctx.plan.isTrainingDay) return 'rest day';
       if (ctx.workoutsToday.some((w) => w.completed)) return 'already trained';
 
       const escalate = ctx.streak.atRisk || ctx.streak.broken || ctx.zeroAerobicRun >= 2;
-      const head = ctx.streak.broken
-        ? '⛔ هذي ثاني جلسة تفوت ورا بعض. القاعدة الوحيدة في البرنامج: لا تفوّت مرتين.'
-        : escalate
-          ? '⚠️ أمس فات. اليوم لا.'
-          : '⏳ ما تسجّل تمرين اليوم.';
-      const offer = ctx.plan.recovery.effectiveBand === 'red'
-        ? 'التعافي أحمر — مشي هادئ 15 دقيقة وبس. لا حديد ولا Zone 2.'
-        : ctx.plan.adjusted.isLiftDay
-          ? 'خيارك الآن: نصف جلسة — تمرينين فقط، مجموعتين. أو 15 دقيقة مشي.'
-          : 'خيارك الآن: 10-15 دقيقة Zone 2، أو مشي هادئ بعد العشا.';
+      const head = ctx.streak.broken ? `⛔ ${t('missedTwice')}`
+        : escalate ? `⚠️ ${t('missedOne')}`
+        : `⏳ ${t('nothingLogged')}`;
+      const offer = ctx.plan.recovery.effectiveBand === 'red' ? t('offerRed')
+        : ctx.plan.adjusted.isLiftDay ? t('offerLift')
+        : t('offerCardio');
       await tg.sendMessage(`${head}\n${offer}`, {
         keyboard: [
-          [{ text: '👍 بسوّيها الحين', callback_data: 'intent:now' }],
-          [{ text: '🚫 اليوم راح', callback_data: 'intent:skip' }],
+          [{ text: `👍 ${t('willDoIt')}`, callback_data: 'intent:now' }],
+          [{ text: `🚫 ${t('dayGone')}`, callback_data: 'intent:skip' }],
         ],
       });
       await repo.messages.add(userId, { direction: 'out', kind: 'nudge', body: head });
@@ -216,14 +257,15 @@ export const JOBS = [
   {
     key: 'bedtime',
     at: (p) => p.schedule?.bedtime ?? '21:30',
-    async run(userId, profile, date) {
-      const ctx = await buildContext(userId, profile, { date });
+    async run(userId, profile, date, lang) {
+      const t = L(lang);
+      const ctx = await buildContext(userId, profile, { date, lang });
       const mag = ctx.supplements.find((s) => /magnesium/i.test(s.name));
       const lines = [
-        '🌙 بداية التهدئة.',
+        `🌙 ${t('windDown')}`,
         mag ? `${mag.timing_slot} — ${mag.name} (${mag.dose}).` : '',
-        'هدف إطفاء النور: 23:15. الشاشة بعيدة قبلها بنصف ساعة.',
-        ctx.daily?.weight_kg == null ? 'وزن الصباح بكرة قبل الفطور.' : '',
+        t('lightsOut'),
+        ctx.daily?.weight_kg == null ? t('weighTomorrow') : '',
       ].filter(Boolean).join('\n');
       return send(userId, 'nudge', lines);
     },
@@ -232,8 +274,8 @@ export const JOBS = [
     key: 'weekly_review',
     at: (p) => p.schedule?.weekly_review?.time ?? '20:00',
     weekday: (p) => p.schedule?.weekly_review?.weekday ?? 7,
-    async run(userId, profile, date) {
-      const text = await composeWeekly(userId, profile, date);
+    async run(userId, profile, date, lang) {
+      const text = await composeWeekly(userId, profile, date, lang);
       await send(userId, 'review', text);
       if (emailEnabled()) await sendEmail(`Weekly review ${date}`, text);
     },
@@ -243,7 +285,7 @@ export const JOBS = [
 /* -------------------------------------------------------------- triggers --- */
 
 /**
- * Event triggers that do not sit on a fixed clock time. Checked every tick;
+ * Event triggers that do not sit on a fixed clock time. Checked periodically;
  * each fires at most once a day via its own job_runs key.
  */
 export const TRIGGERS = [
@@ -251,83 +293,110 @@ export const TRIGGERS = [
     key: 'trigger_downgrade',
     // Must reach him BEFORE he trains, so it runs as soon as the morning
     // numbers land rather than at a fixed hour.
-    async check(userId, profile, ctx) {
+    async check(userId, profile, ctx, lang) {
       if (ctx.plan.recovery.pct == null) return null;
       if (!ctx.plan.isTrainingDay) return null;
-      const band = ctx.plan.recovery.effectiveBand;
-      if (band !== 'red') return null;
-      return `🔴 التعافي ${ctx.plan.recovery.pct}%${ctx.plan.recovery.sleepDowngrade ? ' والنوم أقل من 6 ساعات' : ''}.\n`
-        + `خطة اليوم نزلت: ${F.sessionLine(ctx.plan)}.\n`
-        + `لا حديد اليوم. هذا ليس تراجعاً — هذا هو البرنامج.`;
+      if (ctx.plan.recovery.effectiveBand !== 'red') return null;
+      const t = L(lang);
+      const sleepNote = ctx.plan.recovery.sleepDowngrade
+        ? (lang === 'en' ? ' and under 6 h of sleep' : ' والنوم أقل من 6 ساعات') : '';
+      const head = lang === 'en'
+        ? `🔴 Recovery ${ctx.plan.recovery.pct}%${sleepNote}.\nToday steps down: ${F.sessionLine(lang, ctx.plan)}.\n`
+          + 'No lifting today. This is not a setback — this is the programme.'
+        : `🔴 التعافي ${ctx.plan.recovery.pct}%${sleepNote}.\nخطة اليوم نزلت: ${F.sessionLine(lang, ctx.plan)}.\n`
+          + 'لا حديد اليوم. هذا ليس تراجعاً — هذا هو البرنامج.';
+      return head;
     },
   },
   {
     key: 'trigger_zero_aerobic',
-    async check(userId, profile, ctx) {
+    async check(userId, profile, ctx, lang) {
       if (ctx.zeroAerobicRun < 2) return null;
       if (minutesOfDay(ctx.time) < minutesOfDay('11:00')) return null;
+      // Never push aerobic work on a red day - the overlay already said walk only,
+      // and two nudges that contradict each other get both of them ignored.
+      if (ctx.plan.recovery.effectiveBand === 'red') return null;
       // On a fresh install every day looks like a zero-aerobic day because
       // nothing has been logged yet. Drift is only meaningful once the block
       // has had time to produce a record.
       if (daysBetween(profile.training.block.start_date, ctx.date) < 2) return null;
-      // Never push aerobic work on a red day - the overlay already said walk only,
-      // and two nudges that contradict each other get both of them ignored.
-      if (ctx.plan.recovery.effectiveBand === 'red') return null;
-      return `⚠️ يومين بصفر دقيقة هوائية. هذي بالضبط الطريقة اللي انهار فيها بلوك يونيو.\n`
-        + `اليوم: 15 دقيقة Zone 2 على الإليبتكال. مو أكثر.`;
+      return lang === 'en'
+        ? '⚠️ Two days at zero aerobic minutes. This is exactly how the June block came apart.\n'
+          + 'Today: 15 minutes of Zone 2 on the elliptical. No more than that.'
+        : '⚠️ يومين بصفر دقيقة هوائية. هذي بالضبط الطريقة اللي انهار فيها بلوك يونيو.\n'
+          + 'اليوم: 15 دقيقة Zone 2 على الإليبتكال. مو أكثر.';
     },
   },
   {
     key: 'trigger_quit_prep',
-    async check(userId, profile, ctx) {
+    async check(userId, profile, ctx, lang) {
       const s = ctx.smokeFree;
       if (!s?.beforeQuit) return null;
       if (s.daysToQuit > 7) return null;
       if (minutesOfDay(ctx.time) < minutesOfDay('19:00')) return null;
+      const t = L(lang);
       const med = profile.smoking?.medication ?? '';
-      return `🚭 ${s.daysToQuit} يوم لتاريخ الإقلاع (${profile.smoking.quit_date}).\n`
+      return `🚭 ${t('daysToQuit', { n: s.daysToQuit })} (${profile.smoking.quit_date})\n`
         + (s.daysToQuit >= 7 && med ? `${med}\n` : '')
-        + `خطوة اليوم: ${quitPrepStep(s.daysToQuit, profile)}`;
+        + `${t('todayStep')}: ${quitPrepStep(s.daysToQuit, profile, lang)}`;
     },
   },
   {
     key: 'trigger_appointment',
-    async check(userId, profile, ctx) {
+    async check(userId, profile, ctx, lang) {
       const items = ctx.openItems.filter((o) => o.due_on && daysBetween(ctx.date, o.due_on) === 0);
       if (!items.length) return null;
       if (minutesOfDay(ctx.time) < minutesOfDay('08:00')) return null;
-      return `📌 اليوم: ${items.map((i) => i.title).join('، ')}.`;
+      const label = lang === 'en' ? 'Today' : 'اليوم';
+      return `📌 ${label}: ${items.map((i) => i.title).join(F.listSep(lang))}.`;
     },
   },
 ];
 
-function quitPrepStep(daysToQuit, profile) {
-  const steps = {
-    // The support route is whatever the profile says it is - it differs by country.
-    7: `احجز موعد عيادة الإقلاع. ${profile?.smoking?.support ?? ''}`.trim(),
+const QUIT_STEPS = {
+  ar: {
+    7: 'احجز موعد عيادة الإقلاع.',
     6: 'اكتب أقوى ثلاثة محفّزات عندك — الوقت والمكان لكل واحد.',
     5: 'قرّر مع الطبيب موضوع الدواء اليوم، لأن بدايته لازم تكون قبل التاريخ.',
     4: 'نظّف السيارة والمكتب من أي سجاير وولّاعات.',
-    3: 'جهّز البديل: علكة نيكوتين أو لصقات، من العيادة مجاناً.',
+    3: 'جهّز البديل: علكة نيكوتين أو لصقات.',
     2: 'بلّغ شخصين حولك بالتاريخ.',
     1: 'آخر علبة تنتهي الليلة. لا تشتري غيرها.',
     0: 'اليوم هو التاريخ. أول 72 ساعة هي الأصعب — خذها ساعة بساعة.',
-  };
-  return steps[daysToQuit] ?? 'راجع قائمة التحضير.';
+  },
+  en: {
+    7: 'Book the cessation clinic appointment.',
+    6: 'Write down your three strongest triggers — the time and place for each.',
+    5: 'Settle the medication question with your doctor today; it has to start before the date.',
+    4: 'Clear the car and the office of cigarettes and lighters.',
+    3: 'Have the substitute ready: nicotine gum or patches.',
+    2: 'Tell two people the date.',
+    1: 'The last packet finishes tonight. Do not buy another.',
+    0: 'Today is the date. The first 72 hours are the worst — take them hour by hour.',
+  },
+};
+
+function quitPrepStep(daysToQuit, profile, lang = 'ar') {
+  const table = QUIT_STEPS[lang] ?? QUIT_STEPS.ar;
+  const step = table[daysToQuit];
+  if (!step) return lang === 'en' ? 'Review the prep checklist.' : 'راجع قائمة التحضير.';
+  // The support route is whatever the profile says it is - it differs by country.
+  if (daysToQuit === 7 && profile?.smoking?.support) return `${step} ${profile.smoking.support}`;
+  return step;
 }
 
-export async function runTriggers(userId, profile, ctx, claim) {
+export async function runTriggers(userId, profile, ctx, claim, lang = 'ar') {
   const fired = [];
-  for (const t of TRIGGERS) {
+  for (const trigger of TRIGGERS) {
     let text = null;
-    try { text = await t.check(userId, profile, ctx); } catch (e) {
-      console.error(`[trigger ${t.key}]`, e.message);
+    try { text = await trigger.check(userId, profile, ctx, lang); } catch (e) {
+      console.error(`[trigger ${trigger.key}]`, e.message);
       continue;
     }
     if (!text) continue;
-    if (!(await claim(t.key))) continue;
+    if (!(await claim(trigger.key))) continue;
     await send(userId, 'alert', text);
-    fired.push(t.key);
+    fired.push(trigger.key);
   }
   return fired;
 }
