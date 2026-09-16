@@ -16,11 +16,16 @@ import { todayScore } from '../bot/lang.js';
 import { addDays, weekStart, daysBetween, minutesOfDay } from '../lib/time.js';
 import { weeklyAerobicTarget } from '../domain/program.js';
 import { proteinFix } from '../domain/targets.js';
+import * as whoop from '../integrations/whoop/sync.js';
 
 /* ------------------------------------------------------------ the brief --- */
 
 export async function composeBrief(userId, profile, date, lang = 'ar') {
   const t = L(lang);
+  // Pull WHOOP first. A webhook usually beats 07:00, but not if he woke at
+  // 06:55 - and a brief that says "recovery not logged" when the watch knows
+  // the number is the exact friction this integration exists to remove.
+  await syncWhoopQuietly(userId, profile);
   const ctx = await buildContext(userId, profile, { date, lang });
   const game = await todayScore(userId, profile, date).catch(() => null);
 
@@ -44,6 +49,16 @@ export async function composeBrief(userId, profile, date, lang = 'ar') {
 
   const focus = await oneFocus(profile, ctx, lang);
   return `${facts}\n\n🎯 ${focus}`;
+}
+
+/** Best-effort: a WHOOP outage must never stop the brief going out. */
+async function syncWhoopQuietly(userId, profile) {
+  try {
+    if (!(await whoop.isConnected(userId))) return;
+    await whoop.syncRecent(userId, profile, 2);
+  } catch (e) {
+    console.warn('[brief] whoop sync skipped:', e.message);
+  }
 }
 
 /** The single thing that matters today. AI-written; falls back to a rule. */

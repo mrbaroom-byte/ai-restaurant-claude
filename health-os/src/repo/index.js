@@ -57,10 +57,12 @@ export const dailyLogs = {
     };
     return one(
       `insert into daily_logs
-         (user_id, date, weight_kg, notes, recovery_pct, sleep_hours, resting_hr, steps, smoke_free, supersedes)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning *`,
+         (user_id, date, weight_kg, notes, recovery_pct, sleep_hours, resting_hr, steps, smoke_free,
+          supersedes, source, external_id)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning *`,
       [userId, date, merged.weight_kg, merged.notes, merged.recovery_pct, merged.sleep_hours,
-       merged.resting_hr, merged.steps, merged.smoke_free, prev?.id ?? null],
+       merged.resting_hr, merged.steps, merged.smoke_free, prev?.id ?? null,
+       fields.source ?? prev?.source ?? null, fields.external_id ?? prev?.external_id ?? null],
     );
   },
 
@@ -122,13 +124,35 @@ export const workouts = {
     one(
       `insert into workouts
          (user_id, logged_at, date, type, duration_min, session_label, avg_hr, max_hr,
-          zone2_minutes, rpe, completed, skipped_reason, notes, supersedes)
-       values ($1, coalesce($2, now()), $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) returning *`,
+          zone2_minutes, rpe, completed, skipped_reason, notes, supersedes, source, external_id, raw)
+       values ($1, coalesce($2, now()), $3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) returning *`,
       [userId, row.logged_at ?? null, row.date, row.type, row.duration_min ?? null,
        row.session_label ?? null, row.avg_hr ?? null, row.max_hr ?? null,
        row.zone2_minutes ?? null, row.rpe ?? null, row.completed ?? true,
-       row.skipped_reason ?? null, row.notes ?? null, row.supersedes ?? null],
+       row.skipped_reason ?? null, row.notes ?? null, row.supersedes ?? null,
+       row.source ?? null, row.external_id ?? null, row.raw ? JSON.stringify(row.raw) : null],
     ),
+
+  /** The live row for a provider's object, if we have already imported it. */
+  byExternalId: (userId, source, externalId) =>
+    one(
+      `select * from workouts where user_id=$1 and source=$2 and external_id=$3
+         and ${notSuperseded('workouts')}
+       order by id desc limit 1`,
+      [userId, source, externalId],
+    ),
+
+  /**
+   * Import or correct one provider row. A repeated `updated` event inserts a
+   * new row pointing at the old one rather than mutating or duplicating it, so
+   * the history stays append-only and the correction is visible.
+   */
+  async upsertExternal(userId, row) {
+    const prev = await workouts.byExternalId(userId, row.source, row.external_id);
+    if (prev && !changed(prev, row)) return { row: prev, action: 'unchanged' };
+    const saved = await workouts.add(userId, { ...row, supersedes: prev?.id ?? null });
+    return { row: saved, action: prev ? 'corrected' : 'created' };
+  },
 
   forDate: (userId, date) =>
     query(
@@ -372,9 +396,84 @@ export const openItems = {
     ),
 };
 
+/* --------------------------------------------------------- integrations --- */
+
+export const integrations = {
+  get: (userId, provider) =>
+    one('select * from integrations where user_id=$1 and provider=$2', [userId, provider]),
+
+  save: (userId, provider, t) =>
+    one(
+      `insert into integrations
+         (user_id, provider, external_user, access_token, refresh_token, expires_at, scopes, status, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,'connected', now())
+       on conflict (user_id, provider) do update
+         set external_user = coalesce(excluded.external_user, integrations.external_user),
+             access_token=excluded.access_token,
+             refresh_token=coalesce(excluded.refresh_token, integrations.refresh_token),
+             expires_at=excluded.expires_at, scopes=excluded.scopes,
+             status='connected', last_error=null, updated_at=now()
+       returning *`,
+      [userId, provider, t.external_user ?? null, t.access_token ?? null,
+       t.refresh_token ?? null, t.expires_at ?? null, t.scopes ?? null],
+    ),
+
+  touch: (userId, provider) =>
+    query('update integrations set last_sync_at=now(), updated_at=now() where user_id=$1 and provider=$2',
+      [userId, provider]),
+
+  fail: (userId, provider, status, detail) =>
+    query('update integrations set status=$3, last_error=$4, updated_at=now() where user_id=$1 and provider=$2',
+      [userId, provider, status, String(detail ?? '').slice(0, 500)]),
+
+  disconnect: (userId, provider) =>
+    query(`update integrations set status='revoked', access_token=null, refresh_token=null, updated_at=now()
+           where user_id=$1 and provider=$2`, [userId, provider]),
+
+  /** Every user with a live connection - the scheduler syncs these. */
+  connected: (provider) =>
+    query(`select * from integrations where provider=$1 and status='connected'`, [provider]),
+};
+
+/* ------------------------------------------------------- webhook_events --- */
+
+export const webhookEvents = {
+  /**
+   * Record a delivery. Returns null when this exact event was already stored,
+   * which is how a provider's retry becomes a no-op.
+   */
+  record: (userId, e) =>
+    one(
+      `insert into webhook_events (user_id, provider, event_type, external_id, trace_id, payload)
+       values ($1,$2,$3,$4,$5,$6)
+       on conflict (provider, event_type, external_id, trace_id) do nothing
+       returning *`,
+      [userId, e.provider, e.event_type, e.external_id ?? null, e.trace_id ?? null,
+       JSON.stringify(e.payload ?? {})],
+    ),
+
+  finish: (id, status, detail) =>
+    query('update webhook_events set status=$2, detail=$3, handled_at=now() where id=$1',
+      [id, status, String(detail ?? '').slice(0, 500)]),
+
+  recent: (provider, limit = 20) =>
+    query('select * from webhook_events where provider=$1 order by received_at desc limit $2',
+      [provider, limit]),
+};
+
 /* ---------------------------------------------------------------- utils --- */
 
 function pick(next, prev) { return next === undefined ? (prev ?? null) : next; }
+
+/** Would re-importing this provider row actually change anything we store? */
+function changed(prev, row) {
+  const fields = ['type', 'duration_min', 'avg_hr', 'max_hr', 'zone2_minutes', 'completed', 'notes'];
+  return fields.some((f) => {
+    const a = prev[f] ?? null;
+    const b = row[f] ?? null;
+    return String(a) !== String(b);
+  });
+}
 
 function groupByDate(rows) {
   const map = new Map();

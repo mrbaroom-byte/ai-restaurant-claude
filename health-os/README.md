@@ -41,6 +41,7 @@ stop and fix `.gitignore` before committing anything.
 | **Scores** | XP per day, seven levels, fourteen achievements — all recomputed from the log, never stored |
 | **Speaks** | Arabic and English throughout, switchable from the bot (`/lang`) or the dashboard |
 | **Themes** | Light and dark, following the device by default |
+| **Imports** | WHOOP recovery, sleep and workouts arrive on their own — no morning typing |
 
 Reply to any message to log something. Send a photo of a plate and it comes back
 with an estimate you can correct.
@@ -64,6 +65,61 @@ the guardrails win. Nothing ever subtracts either: a bad day scores zero.
 
 `/stats` in the bot shows the level, what was earned today and what is still
 available. The dashboard shows the same thing as a ring, chips and a badge grid.
+
+## WHOOP
+
+Recovery, sleep and workouts import themselves, so the morning numbers are
+already in place when the 07:00 brief composes. That removes the one piece of
+daily typing the system still required — which is the friction that kills
+programmes, and the reason this integration was worth building.
+
+### Setup
+
+1. Create an app at [developer.whoop.com](https://developer.whoop.com).
+2. Redirect URI: `$PUBLIC_BASE_URL/whoop/callback`. Webhook URL:
+   `$PUBLIC_BASE_URL/whoop/webhook`.
+3. Set `WHOOP_CLIENT_ID` and `WHOOP_CLIENT_SECRET`.
+4. Send `/whoop connect` in Telegram and open the link it returns.
+5. `/whoop backfill 6` imports six months of history, so the trend charts start
+   with real data instead of an empty axis.
+
+Built against the published OpenAPI spec (`api.prod.whoop.com/developer/doc/openapi.json`),
+v2 only — v1 and its webhooks are retired. Scopes: `offline` plus `read:recovery`,
+`read:cycles`, `read:sleep`, `read:workout`, `read:profile`, `read:body_measurement`.
+`offline` is not optional: without it there is no refresh token and the link dies
+after an hour.
+
+### Zone 2 is ours, not WHOOP's
+
+His aerobic band is 110–125 bpm, which falls inside WHOOP's *default* Zone 1.
+Importing WHOOP's own `zone_two_milli` without checking would log a completely
+different intensity under the same name.
+
+So the importer asks which world it is in:
+
+| State | How aerobic minutes are counted |
+|---|---|
+| Zones retuned in the WHOOP app, confirmed with `/whoop zones ok` | `zone_two_milli` — per-minute, the most accurate number available |
+| Not calibrated | From the session average: the whole session if the average sat in the band, none of it otherwise |
+
+And it cross-checks either way. If WHOOP claims 25 minutes "in zone 2" but the
+session averaged 155 bpm, the zones were probably changed back — so the value is
+refused and flagged rather than stored. `/whoop zones ok` after retuning,
+`/whoop zones reset` if you undo it.
+
+### What it will not do
+
+- **Steps are not in the WHOOP API.** They stay manual, or come from Apple
+  Health. They are also the single biggest driver of the WHOOP Age gap, so they
+  are worth having.
+- **Bad optical traces are refused, not stored.** A loose strap produces numbers
+  that look like data; every imported value goes through the same plausibility
+  gate lab values do, and a suspect reading arrives in Telegram as a warning.
+- **Nothing is overwritten.** A re-scored workout inserts a correction pointing
+  at the row it replaces. A workout deleted in WHOOP is marked not-completed
+  rather than removed, so the history still shows what happened.
+- **A WHOOP outage never blocks the brief.** The pre-brief sync is best-effort;
+  if it fails the brief goes out on whatever is already stored.
 
 ## Language and theme
 
@@ -209,6 +265,7 @@ Migrations run on boot unless `RUN_MIGRATIONS=false`.
 | `/supps` | Tick supplements off |
 | `/dash` | Link to the dashboard |
 | `/lang` | Switch between Arabic and English |
+| `/whoop` | Connect the watch, sync, backfill, calibrate zones |
 
 Anything else goes to the coach.
 
@@ -344,7 +401,7 @@ more than a complete system that is never finished.
 | 4 — AI coach with full context | done (`src/coach/`) |
 | 5 — Remaining notifications and event triggers | done (`src/scheduler/jobs.js`) |
 | 6 — Dashboard | done (`src/dashboard/`) — bilingual, themed, gamified |
-| 7 — WHOOP integration | **not done** — recovery, sleep and resting HR are entered manually each morning via `log recovery …`. The monthly averages from the exported reports are seeded as baseline rows. Wire the WHOOP API into `repo.dailyLogs.record()` when the endpoints are available; nothing else needs to change. |
+| 7 — WHOOP integration | done (`src/integrations/whoop/`) — OAuth, webhooks, backfill, plausibility gating and zone calibration. Steps still arrive manually. |
 
 ---
 

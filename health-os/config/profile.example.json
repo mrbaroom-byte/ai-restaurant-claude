@@ -39,6 +39,11 @@
     "zone2": {
       "hr_low": 110,
       "hr_high": 125,
+      "whoop_zone": {
+        "calibrated": false,
+        "index": 2,
+        "note": "Set to true once WHOOP's Zone 2 has been retuned in the app to match hr_low-hr_high. Until then aerobic minutes are counted from the session average instead of per minute."
+      },
       "calibration_note": "True zone 2 sits inside the wearable's 'Zone 1' band. Never chase the app's Zone 2 bar.",
       "modes": ["elliptical", "incline walk", "bike"],
       "timing": "Indoors, or before 07:00."

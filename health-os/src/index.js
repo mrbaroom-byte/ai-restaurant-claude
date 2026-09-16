@@ -8,12 +8,14 @@ import { handleUpdate } from './bot/router.js';
 import { renderDashboard } from './dashboard/render.js';
 import { startScheduler } from './scheduler/index.js';
 import { migrate } from './migrate.js';
+import { handleWhoopRoute } from './integrations/whoop/routes.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
 function requiredEnv() {
   const missing = ['DATABASE_URL', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'TELEGRAM_WEBHOOK_SECRET', 'ANTHROPIC_API_KEY']
     .filter((k) => !process.env[k]);
+  // WHOOP is optional; the system runs on manual morning entry without it.
   if (missing.length) throw new Error(`Missing required env: ${missing.join(', ')}`);
 }
 
@@ -40,6 +42,16 @@ export async function createServer({ userId, profile }) {
     const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
 
     try {
+      // Read the body once and hand the exact bytes on: the WHOOP signature is
+      // computed over the raw payload, and re-serialising the parsed JSON
+      // produces a different string.
+      if (req.method === 'POST') req.rawBody = readBody(req);
+
+      if (url.pathname.startsWith('/whoop/')) {
+        const handled = await handleWhoopRoute(req, res, url, { userId, send });
+        if (handled) return;
+      }
+
       if (url.pathname === '/health' || url.pathname === '/') {
         return send(res, 200, JSON.stringify({ ok: true, date: localDate(new Date(), timezoneOf(profile)) }), 'application/json');
       }
@@ -50,7 +62,7 @@ export async function createServer({ userId, profile }) {
         if (req.headers['x-telegram-bot-api-secret-token'] !== process.env.TELEGRAM_WEBHOOK_SECRET) {
           return send(res, 401, 'unauthorized');
         }
-        const raw = await readBody(req);
+        const raw = await req.rawBody;
         // Acknowledge immediately: Telegram retries anything slower than ~10s,
         // and the coach call can take longer than that.
         send(res, 200, 'ok');

@@ -13,6 +13,8 @@ import { L, HELP, LANGS } from './strings.js';
 import { localDate } from '../lib/time.js';
 import { composeBrief, composeWeekly } from '../scheduler/jobs.js';
 import { resolveLang, setLang, todayScore } from './lang.js';
+import * as whoop from '../integrations/whoop/sync.js';
+import { isConfigured as whoopConfigured } from '../integrations/whoop/api.js';
 
 const MAX_PHOTO_BYTES = 4_500_000; // the API accepts more, but a phone photo is smaller
 
@@ -57,8 +59,8 @@ async function handleText(text, a) {
   // Bare words that take no argument must be the WHOLE message - otherwise
   // "help me understand my LDL" would print the command list instead of
   // reaching the coach.
-  const withArgs = text.match(/^(log|meal|food|labs|rescan|quit)\s+([\s\S]+)$/i);
-  const alone = text.trim().match(/^(day|week|quit|supps|help|brief|dash|stats|lang)$/i);
+  const withArgs = text.match(/^(log|meal|food|labs|rescan|quit|whoop)\s+([\s\S]+)$/i);
+  const alone = text.trim().match(/^(day|week|quit|supps|help|brief|dash|stats|lang|whoop)$/i);
   const cmd = command ?? (withArgs ? withArgs[1].toLowerCase() : alone ? alone[1].toLowerCase() : null);
   const rest = command ? args : (withArgs ? withArgs[2].trim() : '');
 
@@ -77,6 +79,7 @@ async function handleText(text, a) {
     case 'rescan': return cmdRescan(rest, a);
     case 'quit':   return cmdQuit(rest, a);
     case 'supps':  return cmdSupps(a);
+    case 'whoop':  return cmdWhoop(rest, a);
     case 'dash':   return cmdDash(a);
     default:       return cmdChat(text, a);
   }
@@ -335,6 +338,84 @@ async function cmdSupps({ profile, userId, today, lang, t }) {
   const psyllium = due.find((s) => /psyllium/i.test(s.name));
   const note = psyllium?.notes ? `\n\n⚠️ ${psyllium.notes}` : '';
   return tg.sendMessage(`${t('suppsToday')}:${note}`, { keyboard });
+}
+
+async function cmdWhoop(rest, a) {
+  const { profile, userId, today, lang, t } = a;
+  const [verb = '', arg = ''] = String(rest ?? '').trim().toLowerCase().split(/\s+/);
+
+  if (!whoopConfigured()) return tg.sendMessage(t('whoopNotConfigured'));
+
+  const connectLink = () => {
+    const base = process.env.PUBLIC_BASE_URL?.replace(/\/$/, '');
+    const token = process.env.DASHBOARD_TOKEN;
+    return base && token ? `${base}/whoop/connect?token=${encodeURIComponent(token)}` : null;
+  };
+
+  if (verb === 'connect' || (!verb && !(await whoop.isConnected(userId)))) {
+    const link = connectLink();
+    return tg.sendMessage(link ? `${t('whoopNotConnected')}\n${link}` : t('whoopNotConfigured'));
+  }
+
+  if (verb === 'zones') {
+    const z = profile.training?.zone2 ?? {};
+    if (arg === 'ok' || arg === 'yes' || arg === 'done') {
+      await whoop.setZoneCalibration(userId, profile, true);
+      return tg.sendMessage(t('whoopZonesOk', { lo: z.hr_low ?? 110, hi: z.hr_high ?? 125 }));
+    }
+    if (arg === 'reset' || arg === 'no') {
+      await whoop.setZoneCalibration(userId, profile, false);
+      return tg.sendMessage(t('whoopZonesReset'));
+    }
+    const cal = await whoop.zoneCalibration(userId, profile);
+    return tg.sendMessage(cal.calibrated
+      ? t('whoopZonesOk', { lo: cal.low, hi: cal.high })
+      : t('whoopZonesWarn', { lo: cal.low, hi: cal.high }));
+  }
+
+  if (verb === 'disconnect') {
+    await repo.integrations.disconnect(userId, whoop.PROVIDER);
+    return tg.sendMessage(t('whoopDisconnected'));
+  }
+
+  if (!(await whoop.isConnected(userId))) {
+    const link = connectLink();
+    return tg.sendMessage(link ? `${t('whoopNotConnected')}\n${link}` : t('whoopNotConfigured'));
+  }
+
+  if (verb === 'backfill') {
+    const months = Math.min(12, Math.max(1, Number(arg) || 6));
+    await tg.sendMessage(t('whoopBackfilling', { n: months }));
+    const r = await whoop.backfill(userId, profile, { months });
+    const lines = [t('whoopBackfillDone', { r: r.recoveries, s: r.sleeps, w: r.workouts })];
+    if (r.warnings.length) lines.push('', `⚠️ ${r.warnings.slice(0, 3).map((w) => `• ${w}`).join('\n')}`);
+    return tg.sendMessage(lines.join('\n'));
+  }
+
+  if (verb === 'sync' || verb === '') {
+    const r = await whoop.syncRecent(userId, profile, Number(arg) || 2);
+    const cal = await whoop.zoneCalibration(userId, profile);
+    const lines = [`⌚ ${t('whoopSynced', { r: r.recoveries, s: r.sleeps, w: r.workouts })}`];
+    if (!cal.calibrated) lines.push('', t('whoopZonesWarn', { lo: cal.low, hi: cal.high }));
+    if (r.warnings.length) lines.push('', `⚠️ ${r.warnings.slice(0, 3).map((w) => `• ${w}`).join('\n')}`);
+    const ctx = await buildContext(userId, profile, { date: today, lang });
+    lines.push('', F.recoveryLine(lang, ctx.plan), `${t('session')}: ${F.sessionLine(lang, ctx.plan)}`);
+    return tg.sendMessage(lines.join('\n'));
+  }
+
+  if (verb === 'status') {
+    const st = await whoop.status(userId);
+    const cal = await whoop.zoneCalibration(userId, profile);
+    const lines = [
+      t('whoopStatus', { state: st.connected ? '✅' : '—' }),
+      st.lastSyncAt ? t('whoopLastSync', { t: new Date(st.lastSyncAt).toISOString().slice(0, 16).replace('T', ' ') }) : '',
+      st.lastError ? `⚠️ ${st.lastError}` : '',
+      cal.calibrated ? t('whoopZonesOk', { lo: cal.low, hi: cal.high }) : t('whoopZonesWarn', { lo: cal.low, hi: cal.high }),
+    ].filter(Boolean);
+    return tg.sendMessage(lines.join('\n'));
+  }
+
+  return tg.sendMessage(t('whoopHelp'));
 }
 
 async function cmdDash({ lang, t }) {

@@ -113,6 +113,23 @@ export const BOT = {
     foodNeedsText: 'اكتب الصنف بعد الأمر.',
     noSupps: 'ما في مكمّلات مجدولة.',
     suppsToday: 'المكمّلات اليوم',
+
+    whoopConnected: 'ووب متصل.',
+    whoopSynced: 'استوردت {r} تعافي · {s} نوم · {w} تمرين.',
+    whoopWorkout: 'تمرين جديد من ووب — {d}.',
+    whoopNoZone2: '(خارج نطاق Zone 2، ما احتُسب)',
+    whoopSuspect: 'قراءة ووب مشكوك فيها — ما انحفظت:',
+    whoopNotConfigured: 'ووب غير مهيّأ. ناقص WHOOP_CLIENT_ID أو WHOOP_CLIENT_SECRET أو PUBLIC_BASE_URL.',
+    whoopNotConnected: 'ووب غير متصل. افتح الرابط وسجّل الدخول:',
+    whoopStatus: 'ووب: {state}',
+    whoopLastSync: 'آخر مزامنة: {t}',
+    whoopZonesWarn: '⚠️ نطاقات ووب غير معايرة. عدّلها في تطبيق ووب بحيث Zone 2 = {lo}-{hi} نبضة، وبعدها شغّل /whoop zones ok',
+    whoopZonesOk: '✅ تم تسجيل أن نطاقات ووب معايرة على {lo}-{hi}. الدقائق الهوائية بتُحتسب لكل دقيقة بدل المتوسط.',
+    whoopZonesReset: 'رجعت للاحتساب بالمتوسط. عدّل النطاقات وشغّل /whoop zones ok.',
+    whoopBackfilling: 'أستورد {n} شهور من تاريخ ووب… بيأخذ دقيقة.',
+    whoopBackfillDone: 'انتهى الاستيراد: {r} تعافي · {s} نوم · {w} تمرين.',
+    whoopDisconnected: 'تم فصل ووب.',
+    whoopHelp: 'استخدم: /whoop connect | sync | backfill | zones ok | zones reset | status | disconnect',
   },
 
   en: {
@@ -214,6 +231,23 @@ export const BOT = {
     foodNeedsText: 'Write the item after the command.',
     noSupps: 'No scheduled supplements.',
     suppsToday: 'Supplements today',
+
+    whoopConnected: 'WHOOP connected.',
+    whoopSynced: 'Imported {r} recovery · {s} sleep · {w} workout.',
+    whoopWorkout: 'New workout from WHOOP — {d}.',
+    whoopNoZone2: '(outside the Zone 2 band, not counted)',
+    whoopSuspect: 'Suspect WHOOP reading — not stored:',
+    whoopNotConfigured: 'WHOOP is not configured. WHOOP_CLIENT_ID, WHOOP_CLIENT_SECRET or PUBLIC_BASE_URL is missing.',
+    whoopNotConnected: 'WHOOP is not connected. Open this link and sign in:',
+    whoopStatus: 'WHOOP: {state}',
+    whoopLastSync: 'Last sync: {t}',
+    whoopZonesWarn: '⚠️ WHOOP zones are not calibrated. Set Zone 2 to {lo}-{hi} bpm in the WHOOP app, then run /whoop zones ok',
+    whoopZonesOk: '✅ Recorded that your WHOOP zones are calibrated to {lo}-{hi}. Aerobic minutes now count per minute instead of from the session average.',
+    whoopZonesReset: 'Back to counting from the session average. Retune the zones, then run /whoop zones ok.',
+    whoopBackfilling: 'Importing {n} months of WHOOP history… this takes a minute.',
+    whoopBackfillDone: 'Import finished: {r} recovery · {s} sleep · {w} workout.',
+    whoopDisconnected: 'WHOOP disconnected.',
+    whoopHelp: 'Use: /whoop connect | sync | backfill | zones ok | zones reset | status | disconnect',
   },
 };
 
@@ -232,6 +266,7 @@ export const HELP = {
 /quit <...> — عدّاد الإقلاع وتسجيل الرغبة
 /supps — تأشير المكمّلات
 /dash — رابط اللوحة
+/whoop — ربط ساعة ووب
 /lang — English
 
 أمثلة /log:
@@ -258,6 +293,7 @@ export const HELP = {
 /quit <...> — smoke-free counter, cravings, triggers
 /supps — tick supplements off
 /dash — dashboard link
+/whoop — connect your WHOOP
 /lang — العربية
 
 /log examples:

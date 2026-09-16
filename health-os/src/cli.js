@@ -11,6 +11,7 @@
 //   node src/cli.js smoke "craving 8 trigger coffee"
 //   node src/cli.js brief | week | trends | tick
 //   node src/cli.js dashboard > /tmp/dash.html
+//   node src/cli.js whoop status | sync | backfill 6 | zones ok
 
 import { loadProfile, timezoneOf } from './profile.js';
 import { localDate } from './lib/time.js';
@@ -23,6 +24,8 @@ import { composeBrief, composeWeekly, fallbackFocus } from './scheduler/jobs.js'
 import { tick } from './scheduler/index.js';
 import { renderDashboard } from './dashboard/render.js';
 import * as mealAi from './coach/meal.js';
+import * as whoop from './integrations/whoop/sync.js';
+import { authorizeUrl, isConfigured as whoopConfigured } from './integrations/whoop/api.js';
 import { closePool } from './db.js';
 
 const [, , cmd, ...rest] = process.argv;
@@ -126,10 +129,47 @@ async function main() {
       break;
     }
 
+    case 'whoop': {
+      const [verb = 'status', extra = ''] = arg.split(/\s+/);
+      if (!whoopConfigured()) {
+        console.error('WHOOP_CLIENT_ID, WHOOP_CLIENT_SECRET and PUBLIC_BASE_URL must be set');
+        process.exitCode = 1; break;
+      }
+      if (verb === 'connect') {
+        console.log('Open this URL, sign in, and WHOOP will redirect to /whoop/callback:\n');
+        console.log(authorizeUrl('cli-' + Date.now()));
+        console.log('\n(the server route generates a verified state token; this one is for inspection only)');
+        break;
+      }
+      if (verb === 'zones') {
+        if (extra === 'ok') console.log(await whoop.setZoneCalibration(uid, profile, true));
+        else if (extra === 'reset') console.log(await whoop.setZoneCalibration(uid, profile, false));
+        else console.log(await whoop.zoneCalibration(uid, profile));
+        break;
+      }
+      if (verb === 'sync') {
+        const r = await whoop.syncRecent(uid, profile, Number(extra) || 2);
+        console.log(JSON.stringify(r, null, 2));
+        break;
+      }
+      if (verb === 'backfill') {
+        const months = Math.min(12, Math.max(1, Number(extra) || 6));
+        const r = await whoop.backfill(uid, profile, {
+          months,
+          onProgress: (p) => console.log(`  month ${p.month}/${p.of}: ${p.recoveries}r ${p.sleeps}s ${p.workouts}w`),
+        });
+        console.log(JSON.stringify(r, null, 2));
+        break;
+      }
+      console.log(JSON.stringify(await whoop.status(uid), null, 2));
+      console.log(JSON.stringify(await whoop.zoneCalibration(uid, profile), null, 2));
+      break;
+    }
+
     case 'dashboard': process.stdout.write(await renderDashboard(uid, profile, today, { lang })); break;
 
     default:
-      console.log(`usage: node src/cli.js <day|log|meal|labs|scan|smoke|brief|week|focus|trends|tick|dashboard> [args]`);
+      console.log(`usage: node src/cli.js <day|log|meal|labs|scan|smoke|brief|week|focus|trends|tick|dashboard|whoop> [args]`);
   }
 }
 
