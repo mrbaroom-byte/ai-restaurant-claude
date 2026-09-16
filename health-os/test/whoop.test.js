@@ -7,6 +7,7 @@ import {
 } from '../src/integrations/whoop/map.js';
 import { sign, verify, parseEvent, EVENT_TYPES } from '../src/integrations/whoop/webhook.js';
 import { SCOPES, PAGE_LIMIT, API_BASE, AUTH_URL, TOKEN_URL } from '../src/integrations/whoop/api.js';
+import { stableSystem } from '../src/coach/prompt.js';
 
 const PROFILE_PATH = process.env.TEST_PROFILE
   ?? (fs.existsSync('./config/profile.json') ? './config/profile.json' : './config/profile.example.json');
@@ -265,4 +266,27 @@ test('only the six documented event types are accepted', () => {
   assert.equal(parseEvent(JSON.stringify({ id: 'a', type: 'cycle.updated' })).ok, false);
   assert.equal(parseEvent(JSON.stringify({ type: 'sleep.updated' })).ok, false, 'no id');
   assert.equal(parseEvent('not json').ok, false);
+});
+
+/* ------------------------------------------------- the coach's instruction --- */
+
+test('the coach stops warning about the Zone 2 bar once the zones are retuned', () => {
+  // Before: his band sits inside WHOOP's Zone 1, so the app's bar is misleading.
+  const before = stableSystem(uncalibrated, '2026-09-16', 'en');
+  assert.match(before, /Never tell him to chase the blue Zone 2 bar/);
+
+  // After: the bar means what it says, and telling him to ignore it would be
+  // stale advice that costs him the one cue the watch can give him live.
+  const after = stableSystem(calibrated, '2026-09-16', 'en');
+  assert.doesNotMatch(after, /Never tell him to chase/);
+  assert.match(after, new RegExp(`Zone 2 is ${LO}-${HI} bpm`));
+  assert.match(after, /now correct/);
+});
+
+test('the calibrated band quoted to the coach comes from the profile, not a constant', () => {
+  const shifted = withZoneConfig({
+    ...base,
+    training: { ...base.training, zone2: { ...base.training.zone2, hr_low: 118, hr_high: 133 } },
+  }, { calibrated: true, index: 2 });
+  assert.match(stableSystem(shifted, '2026-09-16', 'en'), /Zone 2 is 118-133 bpm/);
 });

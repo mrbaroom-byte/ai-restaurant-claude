@@ -34,6 +34,10 @@ export async function buildContext(userId, profile, { at = new Date(), date = nu
       repo.meals.latest(userId, 5),
     ]);
 
+  // Whether his WHOOP zones have been retuned to his band decides what the
+  // coach is allowed to say about the app's Zone 2 bar.
+  const whoopZone = await repo.settings.get(userId, 'whoop_zone', null);
+
   // Each window must cover everything the helper reading it walks back through,
   // or the streak silently under-reports: hitStreak looks back 60 days, and the
   // smoke-free count walks every day since the quit date.
@@ -85,5 +89,6 @@ export async function buildContext(userId, profile, { at = new Date(), date = nu
     zeroAerobicRun: zeroAerobicRun(today, workoutMap),
     smokeFree: smokeFreeDays(today, profile, smokingMap),
     workoutMap,
+    whoopZone,
   };
 }

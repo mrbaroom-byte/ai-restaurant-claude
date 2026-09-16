@@ -63,7 +63,7 @@ ${bullets(profile.clinical?.pending)}
 # The training block: ${t.block?.name}, ${t.block?.start_date} to ${t.block?.end_date}
 - THE RULE: ${t.block?.rule}
 - ${t.block?.design_note ?? ''}
-- Zone 2 is ${t.zone2?.hr_low}-${t.zone2?.hr_high} bpm. ${t.zone2?.calibration_note}
+- Zone 2 is ${t.zone2?.hr_low}-${t.zone2?.hr_high} bpm.${t.zone2?.whoop_zone?.calibrated ? '' : ` ${t.zone2?.calibration_note ?? ''}`}
 - ${t.zone2?.effort_cue}
 - ${t.zone2?.timing} ${t.zone2?.doubles_as_warmup ?? ''}
 - Strength: ${t.strength?.prescription}.
@@ -96,7 +96,11 @@ ${bullets(n.counting_rules)}
 
 # Wearable
 - ${profile.whoop?.device_caveat}
-- WHOOP's own zone bands (${profile.whoop?.zones?.z2} for "Zone 2") are too high for him. Never tell him to chase the blue Zone 2 bar.
+- ${t.zone2?.whoop_zone?.calibrated
+  ? `His WHOOP zones have been retuned so the app's Zone 2 is ${t.zone2?.hr_low}-${t.zone2?.hr_high} bpm - his real band. `
+    + `The Zone 2 bar in the app is now correct, so following it is the right instruction.`
+  : `WHOOP's own zone bands (${profile.whoop?.zones?.z2} for "Zone 2") are too high for him. `
+    + `Never tell him to chase the blue Zone 2 bar - his band sits inside WHOOP's Zone 1.`}
 
 # What you do
 Track, remind, estimate, and coach on training and nutrition. You log what he tells you.

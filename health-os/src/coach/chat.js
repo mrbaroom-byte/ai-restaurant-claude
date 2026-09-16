@@ -2,6 +2,7 @@
 
 import { model, safeCreate, textOf } from './client.js';
 import { stableSystem, stateSystem } from './prompt.js';
+import { withZoneConfig } from '../integrations/whoop/map.js';
 import * as repo from '../repo/index.js';
 
 const MAX_TOKENS = 1200; // a nudge, not an essay
@@ -13,7 +14,7 @@ const MAX_TOKENS = 1200; // a nudge, not an essay
  */
 export function systemBlocks(profile, ctx, lang = 'ar') {
   return [
-    { type: 'text', text: stableSystem(profile, ctx.date, lang), cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: stableSystem(withZoneConfig(profile, ctx.whoopZone), ctx.date, lang), cache_control: { type: 'ephemeral' } },
     { type: 'text', text: stateSystem(ctx) },
   ];
 }
